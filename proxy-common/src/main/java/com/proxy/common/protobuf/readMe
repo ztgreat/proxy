@@ -1,0 +1,2 @@
+proto命令生成java类:
+格式：[protoc.exe的目录][protoc.exe] [proto文件路径] --java_out=[生成java类输出目录]

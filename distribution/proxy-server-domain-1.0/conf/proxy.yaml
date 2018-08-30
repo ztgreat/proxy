@@ -1,0 +1,29 @@
+port: 6666
+server: 67.216.203.138
+#每秒 并发量
+concurrent: 1000
+httpPort: 9090
+client:
+        ztgreat:
+               - domain: www.ztgreat.cn
+                 proxyType: http
+                 realhost: 127.0.0.1
+                 realhostport: 8080
+                 description: http代理
+               - serverport: 9091
+                 proxyType: http
+                 realhost: 127.0.0.1
+                 realhostport: 8081
+                 description: http代理
+
+               - serverport: 3307
+                 proxyType: tcp
+                 realhost: 127.0.0.1
+                 realhostport: 3306
+                 description: mysql 代理
+               - serverport: 2222
+                 proxyType: tcp
+                 realhost: 172.16.254.63
+                 realhostport: 22
+                 description: ssh 代理
+

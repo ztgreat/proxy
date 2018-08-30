@@ -1,0 +1,13 @@
+syntax = "proto3";
+package protobuf;
+option  java_package = "com.proxy.common.protobuf";
+option  java_outer_classname = "ProxyMessageProtos";
+message ProxyMessage {
+     int32 crcCode = 1;
+     int64 sessionID = 3;
+     bytes type = 4;
+     bytes proxyType =5;
+     bytes priority = 6;
+     bytes command=8;
+     bytes data=9;
+}
