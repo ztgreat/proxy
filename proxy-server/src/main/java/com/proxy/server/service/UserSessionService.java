@@ -1,7 +1,7 @@
 package com.proxy.server.service;
 
 
-import com.proxy.common.entity.ProxyRealServer;
+import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.server.dao.UserSessionDao;
 import io.netty.channel.Channel;
 

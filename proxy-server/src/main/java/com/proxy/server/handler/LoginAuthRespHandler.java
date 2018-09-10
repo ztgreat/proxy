@@ -1,14 +1,12 @@
 package com.proxy.server.handler;
 
 
-import com.proxy.common.entity.ClientNode;
-import com.proxy.common.entity.ProxyRealServer;
+import com.proxy.common.entity.server.ClientNode;
 import com.proxy.common.protobuf.ProxyMessageProtos;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import com.proxy.server.service.ServerBeanManager;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;

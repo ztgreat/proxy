@@ -4,7 +4,6 @@ import com.proxy.client.service.ClientBeanManager;
 import com.proxy.common.protobuf.ProxyMessageProtos;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
-import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;

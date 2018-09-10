@@ -2,6 +2,7 @@ package com.proxy.client.service;
 
 
 import com.proxy.client.dao.ProxyDao;
+import com.proxy.common.entity.client.RealServer;
 import io.netty.channel.Channel;
 
 public class ProxyService {
@@ -20,12 +21,12 @@ public class ProxyService {
         return proxyDao.getRealServerChannelSessionID(realServerChannel);
     }
 
-    public  Channel getRealServerChannel(Long sessionID) {
+    public  RealServer getRealServerChannel(Long sessionID) {
         return proxyDao.getRealServerChannel(sessionID);
     }
 
-    public  void addRealServerChannel(Long sessionID, Channel realServerChannel,String proxyType,String proxyServer) {
-        proxyDao.addRealServerChannel(sessionID,realServerChannel,proxyType,proxyServer);
+    public  void addRealServerChannel(Long sessionID, RealServer realServer,Channel realServerChannel, String proxyType, String proxyServer) {
+        proxyDao.addRealServerChannel(sessionID,realServer,realServerChannel,proxyType,proxyServer);
     }
     public  int getProxyType(Channel realServerChannel) {
         return proxyDao.getProxyType(realServerChannel);

@@ -3,8 +3,8 @@ package com.proxy.client.handler;
 
 import com.proxy.client.service.ClientBeanManager;
 import com.proxy.common.codec.http.MyHttpRequestEncoder;
+import com.proxy.common.entity.client.RealServer;
 import com.proxy.common.protocol.CommonConstant;
-import com.proxy.common.util.IPGenerate;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -62,13 +62,25 @@ public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
     public  void httpHandler(ChannelHandlerContext ctx,FullHttpRequest request) throws  Exception{
 
 
+
+
         String id=request.headers().get(CommonConstant.SESSION_NAME);
         Long sessionID =Long.valueOf(id);
         if (sessionID==null){
             logger.debug("无法获取sessionId,丢弃消息");
+            ReferenceCountUtil.release(request);
             return;
         }
-        Channel realServerChannel= ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
+        RealServer realServer=ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
+        Channel realServerChannel= null;
+
+        if(realServer ==null || (realServerChannel=realServer.getChannel())==null){
+            logger.debug("无法获取真实服务器连接,丢弃消息");
+            ReferenceCountUtil.release(request);
+            return;
+        }
+
+
         InetSocketAddress sa = (InetSocketAddress)realServerChannel.remoteAddress();
         String host=sa.getHostString();
 
@@ -80,9 +92,7 @@ public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
          * 使用http 1.1,并设置keep-alive
          * 否则: 当收到真实服务器消息后，真正组装消息的时候，真实服务器因为短连接原因关闭
          * 通道,会使已经缓存的消息，但是还没有发送的消息 发送不出去。
-         * @TODO 待解决
          */
-        //request.headers().set("Connection","keep-alive");
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
@@ -90,7 +100,7 @@ public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
         httpRequestEncoder.encode(ctx,request,list);
         for (Object o:list){
             realServerChannel.writeAndFlush(o);
-            logger.debug("客户端转发http请求至真实服务器");
+            logger.debug("转发http请求至真实服务器:{}:{}",request.method().name(),request.uri());
         }
 
 

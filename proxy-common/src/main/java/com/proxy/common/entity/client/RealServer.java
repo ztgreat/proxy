@@ -1,10 +1,12 @@
-package com.proxy.common.entity;
+package com.proxy.common.entity.client;
+
+import io.netty.channel.Channel;
 
 /**
  * 代理客户端和真实服务器的映射
  * @author ztgreat
  */
-public class ProxyRealServer {
+public class RealServer {
 
     /**
      * 映射名称
@@ -40,32 +42,22 @@ public class ProxyRealServer {
      * 代理客户端key
      */
     private String clientKey;
-    /**
-     * 在http代理中的header 属性中,设置X-Forwarded-For 属性
-     * 值:
-     * none    :默认值不设置该属性
-     * default : 默认值,代理服务器地址
-     * random  : 表示随机设定值
-     * ip地址   : 指定值
-     *
-     */
-    private String forward;
+
     /**
      * 描述
      */
     private String description;
+
+
+    /**
+     * 代理客户端和真实服务器通道
+     */
+    private Channel channel;
+
     /**
      * 该代理状态
      */
     private int status;
-
-    public String getForward() {
-        return forward;
-    }
-
-    public void setForward(String forward) {
-        this.forward = forward;
-    }
 
     public String getName() {
         return name;
@@ -145,5 +137,11 @@ public class ProxyRealServer {
         this.domain = domain;
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
 
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
 }

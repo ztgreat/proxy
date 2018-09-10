@@ -18,9 +18,6 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
 public class ProxyClient {
 
 
@@ -43,10 +40,6 @@ public class ProxyClient {
      */
     private int maxContentLength = 2*1024 * 1024;
 
-    /**
-     * 客服端和服务端的 channel
-     */
-    private  volatile  Channel channel;
 
     /**
      * 客户端启动器
@@ -57,7 +50,7 @@ public class ProxyClient {
     /**
      * 连接真实服务器启动器,使用时才初始化
      */
-    private Bootstrap realServerBootstrap;
+    public static Bootstrap realServerBootstrap;
 
     /**
      * NioEventLoopGroup可以理解为一个线程池,
@@ -157,7 +150,7 @@ public class ProxyClient {
         future.addListener(new ChannelFutureListener() {
             public void operationComplete(ChannelFuture futureListener) throws Exception {
                 if (futureListener.isSuccess()) {
-                    channel = futureListener.channel();
+                    Channel channel = futureListener.channel();
                     logger.info("连接服务器({})成功",host);
 
                     channel.closeFuture().addListeners(new ChannelFutureListener() {

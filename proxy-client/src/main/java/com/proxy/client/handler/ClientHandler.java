@@ -1,6 +1,7 @@
 package com.proxy.client.handler;
 
 import com.proxy.client.service.ClientBeanManager;
+import com.proxy.common.entity.client.RealServer;
 import com.proxy.common.protobuf.ProxyMessageProtos;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
@@ -49,8 +50,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessageProtos.ProxyMessage proxyMessage) {
         Long sessionID = proxyMessage.getSessionID();
 
-        Channel realServerChannel= ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
-        if (realServerChannel != null) {
+        RealServer realServer= ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
+        Channel realServerChannel = null;
+        if ((realServer !=null) &&  (realServerChannel=realServer.getChannel()) != null) {
 
             byte requestType=proxyMessage.getProxyType().byteAt(0);
             if (requestType== CommonConstant.ProxyType.TCP){
@@ -75,6 +77,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             // TODO: 2018/2/22 需要fix
 
             //方案1:通知服务器关闭用户的请求,让用户重新发起新的连接
+            //目前:检测到和真实服务器失去连接后，会通知代理服务器断开与用户的连接
             proxyMessage = ProxyMessageUtil.buildReConnect(sessionID,null);
             ctx.channel().writeAndFlush(proxyMessage);
 
@@ -113,7 +116,15 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
                     logger.debug("客户端连接真实服务器成功{}",ip+":"+port);
 
-                    ClientBeanManager.getProxyService().addRealServerChannel(sessionID,realServerChannel,String.valueOf(proxyType),proxyServer);
+                    RealServer realServer = new RealServer();
+
+                    realServer.setChannel(realServerChannel);
+                    realServer.setRealHost(ip);
+                    realServer.setRealHostPort(port);
+                    realServer.setProxyType(proxyType);
+                    realServer.setStatus(CommonConstant.ProxyStatus.ONLINE);
+
+                    ClientBeanManager.getProxyService().addRealServerChannel(sessionID,realServer,realServerChannel,String.valueOf(proxyType),proxyServer);
 
 
                     ProxyMessageProtos.ProxyMessage proxyMessage = ProxyMessageUtil.buildConnectSuccess(sessionID,null);
@@ -135,8 +146,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         final  String ip = serverInfo[0];
         final  int port = Integer.parseInt(serverInfo[1]);
 
-        Channel realServerChannel= ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
-        if (realServerChannel != null) {
+        RealServer realServer =ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
+        Channel realServerChannel=null ;
+        if (realServer !=null && (realServerChannel=realServer.getChannel()) != null) {
             realServerChannel.close();
             ClientBeanManager.getProxyService().removeRealServerChannel(sessionID);
             logger.debug("客户端与真实服务器{}断开",ip+":"+port);

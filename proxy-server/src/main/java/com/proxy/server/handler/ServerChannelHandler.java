@@ -1,13 +1,12 @@
 package com.proxy.server.handler;
 
-import com.proxy.common.entity.ClientNode;
+import com.proxy.common.entity.server.ClientNode;
 import com.proxy.common.protobuf.ProxyMessageProtos;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.server.event.TransferEvent;
 import com.proxy.server.service.ServerBeanManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -103,6 +102,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         if (userChannel!=null)
         {
             userChannel.close();
+            ServerBeanManager.getUserSessionService().remove(sessionId);
             logger.debug("关闭用户连接,需要重新请求");
         }
     }
@@ -117,8 +117,11 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         logger.info("代理客户端与真实服务器连接失败");
         long sessionId=proxyMessage.getSessionID();
         Channel userChannel = ServerBeanManager.getUserSessionService().get(sessionId);
-        logger.info("关闭请求访问通道");
-        userChannel.close();
+        if(userChannel!=null){
+            logger.info("关闭请求访问通道");
+            userChannel.close();
+            ServerBeanManager.getUserSessionService().remove(sessionId);
+        }
     }
 
     @Override

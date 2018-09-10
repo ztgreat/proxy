@@ -1,7 +1,7 @@
 package com.proxy.server.service;
 
-import com.proxy.common.entity.ClientNode;
-import com.proxy.common.entity.ProxyRealServer;
+import com.proxy.common.entity.server.ClientNode;
+import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.server.dao.ClientDao;
 import com.proxy.server.handler.HttpChannelHandler;
