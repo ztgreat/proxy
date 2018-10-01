@@ -40,11 +40,18 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
                 //构造心态响应消息
                 ProxyMessageProtos.ProxyMessage heartBeat = ProxyMessageUtil.buildHeartBeatResp();
                 ctx.writeAndFlush(heartBeat);
-            } else
+            } else{
+                //向上传递消息
                 ctx.fireChannelRead(msg);
+            }
         }else {
             //向后转发消息
-            ctx.fireChannelRead(msg);
+            //ctx.fireChannelRead(msg);
+
+            //消息格式错误,关闭用户连接
+            logger.info("客户端消息格式错误");
+            //关闭用户连接
+            ctx.channel().close();
         }
 
     }
@@ -133,7 +140,7 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
                     if(entry.getKey() instanceof  Integer){
                         //释放绑定的代理服务器 服务端口
                         ServerBeanManager.getProxyChannelService().unBind((Integer) entry.getKey());
-                        ServerBeanManager.getProxyChannelService().getByServerPort((Integer) entry.getKey()).setStatus(CommonConstant.ProxyStatus.OFFLINE);
+                        ServerBeanManager.getProxyChannelService().getServerProxy(entry.getKey()).setStatus(CommonConstant.ProxyStatus.OFFLINE);
                         logger.info("解绑本地服务端口({})成功 客户端({})--{}",entry.getKey(),entry.getValue().getClientKey(),entry.getValue().getDescription());
                     }
                 }

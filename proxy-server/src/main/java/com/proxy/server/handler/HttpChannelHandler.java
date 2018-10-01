@@ -41,7 +41,6 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter{
 
     /**
      * 用于http 消息编码处理
-     * @// TODO: 2018/2/10 需要review
      */
     private MyHttpRequestEncoder httpRequestEncoder;
 
@@ -116,7 +115,7 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter{
         String oldHost= request.headers().get(HttpHeaderNames.HOST);
 
         /**
-         *TODO 需要修改 Referer 属性
+         *修改 Referer 属性
          */
         String referer=request.headers().get(HttpHeaderNames.REFERER);
         if(StringUtils.isNotBlank(referer)){
@@ -142,6 +141,9 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter{
 
         String forward = realServer.getForward();
 
+        /**
+         *修改 forward 值
+         */
         if(StringUtils.isNotBlank(forward)){
 
             if(CommonConstant.HeaderAttr.Forwarded_Random.equals(forward)){
