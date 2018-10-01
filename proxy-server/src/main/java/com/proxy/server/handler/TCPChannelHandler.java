@@ -1,15 +1,14 @@
 package com.proxy.server.handler;
 
 
-import com.proxy.common.entity.ClientNode;
-import com.proxy.common.entity.ProxyChannel;
-import com.proxy.common.entity.ProxyRealServer;
+import com.proxy.common.entity.server.ClientNode;
+import com.proxy.common.entity.server.ProxyChannel;
+import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.protocol.Message;
 import com.proxy.server.service.ServerBeanManager;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ReferenceCountUtil;
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 处理用户请求的handler

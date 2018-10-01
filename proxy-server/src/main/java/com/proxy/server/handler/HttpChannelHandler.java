@@ -2,9 +2,9 @@ package com.proxy.server.handler;
 
 
 import com.proxy.common.codec.http.MyHttpRequestEncoder;
-import com.proxy.common.entity.ClientNode;
-import com.proxy.common.entity.ProxyChannel;
-import com.proxy.common.entity.ProxyRealServer;
+import com.proxy.common.entity.server.ClientNode;
+import com.proxy.common.entity.server.ProxyChannel;
+import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.protocol.Message;
 import com.proxy.common.util.IPGenerate;

@@ -2,8 +2,8 @@ package com.proxy.server;
 
 import com.proxy.common.codec.ProxyMessageDecoder;
 import com.proxy.common.codec.ProxyMessageEncoder;
-import com.proxy.common.entity.ClientNode;
-import com.proxy.common.entity.ProxyRealServer;
+import com.proxy.common.entity.server.ClientNode;
+import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.server.handler.*;
 import com.proxy.server.service.LogBackConfigLoader;

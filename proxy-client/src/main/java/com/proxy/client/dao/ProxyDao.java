@@ -4,19 +4,15 @@ package com.proxy.client.dao;
 import com.proxy.common.cache.Cache;
 import com.proxy.common.cache.CacheManager;
 import com.proxy.common.cache.memory.MemoryCacheManager;
+import com.proxy.common.entity.client.RealServer;
 import com.proxy.common.protocol.CommonConstant;
 import io.netty.channel.Channel;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class ProxyDao {
 
-//    private static Map<Long, Channel> realServerChannels = new ConcurrentHashMap<Long, Channel>();
+    private static CacheManager<Long,RealServer> cacheManager =new MemoryCacheManager<Long,Channel>();
 
-    private static CacheManager<Long,Channel> cacheManager =new MemoryCacheManager<Long,Channel>();
-
-    private static Cache<Long,Channel> realServerChannels = cacheManager.getCache("proxy_cache");
+    private static Cache<Long,RealServer> realServerChannels = cacheManager.getCache("proxy_cache");
 
     /**
      * 代理客户端和代理服务器的通道
@@ -35,12 +31,12 @@ public class ProxyDao {
         return Long.valueOf(realServerChannel.attr(CommonConstant.SESSION_ID).get());
     }
 
-    public  Channel getRealServerChannel(Long sessionID) {
+    public  RealServer getRealServerChannel(Long sessionID) {
         return realServerChannels.get(sessionID);
     }
 
-    public  void addRealServerChannel(Long sessionID, Channel realServerChannel,String proxyType,String proxyServer) {
-        realServerChannels.put(sessionID, realServerChannel);
+    public  void addRealServerChannel(Long sessionID, RealServer realServer, Channel realServerChannel,String proxyType,String proxyServer) {
+        realServerChannels.put(sessionID, realServer);
         realServerChannel.attr(CommonConstant.SESSION_ID).set(String.valueOf(sessionID));
         realServerChannel.attr(CommonConstant.UserChannelAttributeKey.TYPE).set(proxyType);
         realServerChannel.attr(CommonConstant.UserChannelAttributeKey.PROXYSERVER).set(proxyServer);
@@ -51,6 +47,7 @@ public class ProxyDao {
 
     public void clear(){
         realServerChannels.clear();
+        this.channel=null;
     }
 
     public int getProxyType(Channel realServerChannel) {

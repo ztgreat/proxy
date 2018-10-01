@@ -4,7 +4,7 @@ package com.proxy.server.dao;
 import com.proxy.common.cache.Cache;
 import com.proxy.common.cache.CacheManager;
 import com.proxy.common.cache.memory.MemoryCacheManager;
-import com.proxy.common.entity.ProxyRealServer;
+import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import io.netty.channel.Channel;
 

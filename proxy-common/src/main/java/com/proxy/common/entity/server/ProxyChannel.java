@@ -1,4 +1,4 @@
-package com.proxy.common.entity;
+package com.proxy.common.entity.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;

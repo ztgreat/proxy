@@ -108,6 +108,11 @@ public final class CommonConstant {
          */
         public static final int OFFLINE=3;
 
+        /**
+         * 连接中
+         */
+        public static final int CONNECTING=4;
+
     }
 
     public class MessageType{

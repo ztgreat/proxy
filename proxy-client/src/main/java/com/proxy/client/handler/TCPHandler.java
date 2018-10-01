@@ -66,5 +66,10 @@ public class TCPHandler extends ChannelInboundHandlerAdapter {
     public  void removeConnect(ChannelHandlerContext ctx){
         Long sessionID= ClientBeanManager.getProxyService().getRealServerChannelSessionID(ctx.channel());
         ClientBeanManager.getProxyService().removeRealServerChannel(sessionID);
+
+        //
+        ProxyMessageProtos.ProxyMessage proxyMessage = ProxyMessageUtil.buildReConnect(sessionID,null);
+        Channel channel= ClientBeanManager.getProxyService().getChannel();
+        channel.writeAndFlush(proxyMessage);
     }
 }
