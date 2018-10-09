@@ -49,6 +49,9 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
 
                     if(sa.getHostName().equals(clientNode.getHost())){
                         //同一个客户端再次登录
+                        //关闭连接
+                        closeChannle(ctx);
+                        return;
                     }
 
                     //已经存在一个相同key的客户端登录了
@@ -75,6 +78,10 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
             } else {
                 ctx.fireChannelRead(msg);
             }
+        }else {
+            //错误的消息格式
+            //关闭用户连接
+            closeChannle(ctx);
         }
 
     }
@@ -91,7 +98,6 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
         String key=new String(message.getData().toByteArray());
         ctx.channel().attr(CommonConstant.ServerChannelAttributeKey.CLIENT_KEY).set(key);
         InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress();
-        String ip=sa.getAddress().getHostName();
         client.setHost(sa.getAddress().getHostName());
         client.setPort(sa.getPort());
         client.setChannel(ctx.channel());

@@ -1,117 +1,69 @@
-## proxy
 
-proxy可以通过公网服务器访问内网主机，目前仅支持tcp流量转发（测试通过ssh,http,mysql应用的流量转发）
-注:可以通过域名或者端口进行转发
+这款 proxy 呢，可以通过公网服务器访问内网主机，目前仅支持tcp流量转发，是的，需要借助公网服务器，但是不需要把本机的服务部署在公网，这个还是会减少很多工作量的，而且大家也知道，云服务器的资源那是大大的宝贵，当然网上流行的内网穿透，不借助公网服务器，直接穿透内网，以LZ的网络知识，我只想说很难，而且这个在不同的网络环境下影响很大，极大可能性就是不稳定。
 
-如果需要通过外网访问内网主机（http或者mysql等），则需要把服务器端部署到公网服务器，然后添加端口或者域名映射。
+proxy 最开始的版本是通过端口转发的，但是这样就需要不同的服务绑定不同的端口，这无疑是一种资源浪费，同时需要开放公网服务器的端口，这样也不好，现在呢可以通过域名转发，同时也可以配合nginx来使用。
 
-虽然我们可以把应用直接部署到公网服务器，但是应用测试很麻烦，同时对服务器的配置要求也会很高，通过代理，只需要一个很简单的公网服务器，然后把请求转发到本地，这样方便测试开始应用程序。
-
-### 配置文件
-
-#### 服务端
-
-proxy.yaml 文件
-
-```
-port: 6666
-# 服务器ip
-server: 67.216.203.138
-#每秒 并发量
-concurrent: 1000
-
-#如果通过域名转发，则需要指定一个共用的http转发端口
-httpPort: 9090
-client:
-		#客户端key
-        ztgreat:
-        		 #访问域名（通过域名访问）
-               - domain: proxy.name.cn
-               	 #代理类型
-                 proxyType: http
-                 #真实主机ip
-                 realhost: 127.0.0.1
-                 #真实主机端口
-                 realhostport: 8081
-                 description: http代理
-                 
-                 #访问端口（通过端口访问，serverIp+端口）
-               - serverport: 9091
-                 #代理类型
-                 proxyType: http
-                 #真实主机ip
-                 realhost: 127.0.0.1
-                 #真实主机端口
-                 realhostport: 8081
-                 description: http代理
-
-               - serverport: 3307
-                 proxyType: tcp
-                 realhost: 127.0.0.1
-                 realhostport: 3306
-                 description: mysql 代理
-               - serverport: 2222
-                 proxyType: tcp
-                 realhost: 172.16.254.63
-                 realhostport: 22
-                 description: ssh 代理
-
-
-```
-
-
-
-通过域名转发通常需要配合nginx使用：
-
-```
-    # 配置dsn 服务器,后面解析host的时候需要
-    resolver 8.8.8.8 ipv6=off;
-
-	server {
-        listen       80;
-        server_name  name;
-
-		location /{
-			
-		    proxy_pass http://$host:9090;  # 需要配置dns                              
-	        proxy_redirect '~^http://((?:\w+\.){2}\w+):9090(.*)'   http://$host$2;
-		}
-
-    }
-```
-
-
-
-当然端口转发也可以，但这不是必须的，这个就要求公网服务器开放额外的对外端口，关于域名转发和端口转发 具体的nginx的相关配置，可以在resources目录下面找到
-
-#### 客户端
-
-client.properties
-
-```
-# 客户端key 标识客户端
-key=ztgreat
-
-#proxy-server地址
-server.host=127.0.0.1
-#server.host=67.216.203.138
-
-#proxy-server 服务端口
-server.port=6666
-```
-
-### 使用方法
-
-#### 服务端
-
-- 运行proxy-server 中proxyServer类即可(或者打包后运行bin下的start.bat(start.sh) )
-
-#### 客户端
-
-- 运行proxy-client 中proxyClient类即可(或者打包后运行bin下的start.bat(start.sh) )
-
-### proxy 原理
+## 工作流程
 
 ![proxy](./pics/proxy.png)
+
+
+
+上面呢就是proxy的工作模式，很多的代理软件模式都差不多是这样的，代理服务器和代理客户端呢通过私有的协议进行通信。
+
+代理客户端先和代理服务器建立连接，代理服务器通过不同的域名（或端口)来区分具体的代理服务，用户通过访问代理服务器的指定域名（或端口），然后代理服务器将数据转发给代理客户端，客户端再转发数据给真实服务器，当客户端接收到真实服务器响应后，再传输给代理服务器，代理服务器再将数据传送给用户，完成一次请求。
+
+## example
+
+（1）通过外网访问本机的mysql
+
+```
+- serverport: 3307
+              proxyType: tcp
+              realhost: 127.0.0.1
+              realhostport: 3306
+              description: mysql 代理
+```
+
+配置服务端，将服务端程序运行在公网服务器，同时开放3307端口，本地运行客户端（需要简要配置），这样通过外网ip或者域名访问其3307端口，便是访问**内网本机**的3306端口了。
+
+
+
+![20180911152812](http://img.blog.ztgreat.cn/document/netty/20180911152812.png)
+
+
+
+（2）ssh 服务
+
+```
+- serverport: 2222
+              proxyType: tcp
+              realhost: 172.16.254.63
+              realhostport: 22
+              description: ssh 代理
+```
+
+配置服务端，将服务端程序运行在公网服务器，同时开放2222端口，本地运行客户端（需要简要配置），这样通过外网ip或者域名访问其2222端口，便是访问**内网本机(172.16.254.63)**的22端口了。
+
+
+
+![TIM截图20180911153744](http://img.blog.ztgreat.cn/document/netty/20180911153744.png)
+
+
+
+(3)域名转发
+
+```
+- domain:  proxy.ztgreat.cn
+           proxyType: http
+           realhost: 127.0.0.1
+           realhostport: 8080
+           description: http代理
+```
+
+访问proxy.ztgreat.cn  实际访问的便是本机的8080端口
+
+>通过域名转发，是共享的同一个端口（非80），这样需要入口配合nginx来使用
+
 
 代理客户端先和代理服务器建立连接，代理服务器通过不同的端口来区分具体的代理服务，用户通过访问代理服务器的指定端口，然后代理服务器将数据转发给代理客户端，客户端再转发数据给真实服务器，当客户端接收到真实服务器响应后，再传输给代理服务器，代理服务器再将数据传送给用户，完成一次请求。
