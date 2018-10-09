@@ -5,6 +5,8 @@ import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.server.dao.UserSessionDao;
 import io.netty.channel.Channel;
 
+import java.util.Map;
+
 /**
  * 用户session channel的管理
  */
@@ -39,5 +41,8 @@ public class UserSessionService {
         if (channel!=null)
             return userSessionDao.getClientKey(channel);
         return null;
+    }
+    public Map<Long,Channel> getAll(){
+        return userSessionDao.getAll();
     }
 }

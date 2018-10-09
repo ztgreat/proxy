@@ -8,6 +8,8 @@ import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import io.netty.channel.Channel;
 
+import java.util.Map;
+
 /**
  * 用户回话 channel的管理
  */
@@ -46,5 +48,8 @@ public class UserSessionDao {
         if (channel.attr(CommonConstant.UserChannelAttributeKey.CLIENT_KEY).get()==null)
             return null;
         return channel.attr(CommonConstant.UserChannelAttributeKey.CLIENT_KEY).get();
+    }
+    public Map<Long,Channel> getAll(){
+        return sessionIDToChannel.getAll();
     }
 }

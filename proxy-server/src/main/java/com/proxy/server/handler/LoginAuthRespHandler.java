@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 
 /**
  * 登录安全认证响应 handler
@@ -95,6 +96,21 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
         client.setPort(sa.getPort());
         client.setChannel(ctx.channel());
         client.setStatus(CommonConstant.ClientStatus.ONLINE);
+
+        /**
+         * 当客户端连接成功后(可能重启),把以前存在的用户连接关闭掉
+         */
+        Map<Long ,Channel>sessionIDTOChannel=ServerBeanManager.getUserSessionService().getAll();
+        for (Map.Entry<Long,Channel>entry:sessionIDTOChannel.entrySet()){
+            String tempClientKey=ServerBeanManager.getUserSessionService().getClientKey(entry.getValue());
+            if(client.getClientKey().equals(tempClientKey)){
+                //从集合移除
+                ServerBeanManager.getUserSessionService().remove(entry.getKey());
+                //关闭用户连接
+                entry.getValue().close();
+                logger.info("{}:关闭失效的用户端连接",client.getClientKey());
+            }
+        }
 
         //添加客户端到代理服务集合
         ServerBeanManager.getClientService().add(client.getClientKey(), client);
