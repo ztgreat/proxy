@@ -2,6 +2,7 @@ package com.proxy.server.service;
 
 import com.proxy.common.util.NumberGenerate;
 import com.proxy.common.util.SessionIDGenerate;
+import com.proxy.server.ProxyServer;
 import com.proxy.server.handler.traffic.handler.TrafficLimitHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -19,6 +20,11 @@ public class ServerBeanManager {
      * 代理服务 bootstrap
      */
     private  static ServerBootstrap bootstrap;
+
+    /**
+     * 代理服务端实例
+     */
+    private static ProxyServer proxyServer;
 
     /**
      * 用于生成sessionID
@@ -92,5 +98,13 @@ public class ServerBeanManager {
 
     public static TrafficLimitHandler getTrafficLimitHandler() {
         return trafficLimitHandler;
+    }
+
+    public static ProxyServer getProxyServer() {
+        return proxyServer;
+    }
+
+    public static void setProxyServer(ProxyServer proxyServer) {
+        ServerBeanManager.proxyServer = proxyServer;
     }
 }

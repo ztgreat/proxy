@@ -12,6 +12,8 @@ import io.netty.channel.ChannelFutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 /**
  * 本地 端口(tcp)/域名 绑定 具体操作层
  * @author ztgreat
@@ -71,7 +73,9 @@ public class ProxyChannelDao {
         ProxyChannel proxyChannel= proxyChannelCache.get(serverPort);
         if (proxyChannel==null)
             return false;
-        proxyChannel.getChannel().close();
+        if(proxyChannel.getChannel()!=null && proxyChannel.getChannel().isActive()){
+            proxyChannel.getChannel().close();
+        }
         //不移除
 //        proxyChannelCache.remove(serverPort);
         return  true;
@@ -135,5 +139,9 @@ public class ProxyChannelDao {
 
     public ProxyChannel getServerProxy(Object key) {
         return proxyChannelCache.get(key);
+    }
+
+    public Map<Object,ProxyChannel>getAll(){
+        return proxyChannelCache.getAll();
     }
 }

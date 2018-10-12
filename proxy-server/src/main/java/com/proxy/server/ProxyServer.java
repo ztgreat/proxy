@@ -6,9 +6,11 @@ import com.proxy.common.entity.server.ClientNode;
 import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.server.handler.*;
+import com.proxy.server.service.LifeCycle;
 import com.proxy.server.service.LogBackConfigLoader;
 import com.proxy.server.service.ServerBeanManager;
 import com.proxy.server.service.SharableHandlerManager;
+import com.proxy.server.task.ExitHandler;
 import com.proxy.server.util.ProxyUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -25,8 +27,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
-public class ProxyServer {
+public class ProxyServer implements LifeCycle{
 
+    private static Logger logger = LoggerFactory.getLogger(ProxyServer.class);
 
     /**
      * 最大帧长度
@@ -52,7 +55,7 @@ public class ProxyServer {
      * 并发量
      */
     public static  int concurrent = 1000;
-    private static Logger logger = LoggerFactory.getLogger(ProxyServer.class);
+
     /**
      * 绑定端口,默认6666
      */
@@ -62,7 +65,10 @@ public class ProxyServer {
      */
     public Integer httpPort;
 
-
+    /**
+     * 服务端channel
+     */
+    public Channel channel;
 
 
 
@@ -76,12 +82,14 @@ public class ProxyServer {
 
     public static void main(String[] args)throws  Exception{
 
-
         //加载日志
         LogBackConfigLoader.load();
-
         try {
-            new ProxyServer().start();
+            //退出钩子
+            Runtime.getRuntime().addShutdownHook(new ExitHandler());
+            ProxyServer proxyServer = new ProxyServer();
+            ServerBeanManager.setProxyServer(proxyServer);
+            proxyServer.start();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -144,7 +152,6 @@ public class ProxyServer {
             this.httpPort = (int) ServerBeanManager.getConfigService().getConfigure("httpPort");
         }
 
-
         try {
             //配置代理信息
             configurProxy();
@@ -178,10 +185,9 @@ public class ProxyServer {
 
     public ChannelFuture startMainServer(){
 
-
-
         //根据配置文件启动服务
         ChannelFuture future=bind();
+        this.channel = future.channel();
         return future;
     }
 
@@ -297,4 +303,13 @@ public class ProxyServer {
         return null;
     }
 
+    @Override
+    public void shutDown() {
+        try {
+            this.channel.close();
+            logger.debug("{}端口:代理服务退出:",this.port);
+        }catch (Exception e){
+
+        }
+    }
 }

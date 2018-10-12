@@ -5,13 +5,18 @@ import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.server.dao.ProxyChannelDao;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * 本地 端口(tcp)/域名 绑定服务层
  * @author  ztgreat
  */
-public class ProxyChannelService {
+public class ProxyChannelService implements LifeCycle{
 
+    private static Logger logger = LoggerFactory.getLogger(ProxyChannelService.class);
 
     private static ProxyChannelDao proxyChannelDao =new ProxyChannelDao();
 
@@ -80,4 +85,21 @@ public class ProxyChannelService {
         proxyChannelDao.addByServerdomain(domain,proxyRealServer);
     }
 
+    public Map<Object,ProxyChannel> getAll(){
+        return proxyChannelDao.getAll();
+    }
+
+    @Override
+    public void shutDown() {
+
+        try {
+            Map<Object,ProxyChannel> map = this.getAll();
+            for(Map.Entry<Object,ProxyChannel>entry:map.entrySet()){
+                entry.getValue().getChannel().close();
+                logger.debug("代理服务(端口/域名):{} 退出",entry.getKey());
+            }
+        }catch (Exception e){
+
+        }
+    }
 }
