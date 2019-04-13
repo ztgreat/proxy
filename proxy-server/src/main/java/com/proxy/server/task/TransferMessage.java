@@ -1,7 +1,7 @@
 package com.proxy.server.task;
 
 
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.Message;
 import com.proxy.common.util.LoggerUtils;
 import com.proxy.common.util.ProxyMessageUtil;
@@ -37,7 +37,7 @@ public class TransferMessage implements Runnable {
 
         //3、将数据重新封装 通过代理客户端的channel 发送出去
 
-        ProxyMessageProtos.ProxyMessage proxyMessage= ProxyMessageUtil.buildMsg(message.getSessionID()
+        ProxyMessage proxyMessage= ProxyMessageUtil.buildMsg(message.getSessionID()
                 ,message.getType()
                 ,message.getProxyType()
                 ,message.getPriority()

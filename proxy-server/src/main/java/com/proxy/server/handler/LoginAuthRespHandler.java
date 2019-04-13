@@ -2,7 +2,7 @@ package com.proxy.server.handler;
 
 
 import com.proxy.common.entity.server.ClientNode;
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import com.proxy.server.service.ServerBeanManager;
@@ -27,11 +27,11 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
 
-        if (msg instanceof ProxyMessageProtos.ProxyMessage){
-            ProxyMessageProtos.ProxyMessage message= (ProxyMessageProtos.ProxyMessage) msg;
+        if (msg instanceof ProxyMessage){
+            ProxyMessage message= (ProxyMessage) msg;
 
             //获取消息类型
-            byte type=message.getType().toByteArray()[0];
+            byte type=message.getType()[0];
 
             //如果是心跳请求消息
             if ( type== CommonConstant.Login.TYPE_LOGIN_REQ){
@@ -41,7 +41,7 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
 
                 logger.info("客户端({})请求登录认证",sa.getHostName());
 
-                String clientKey=new String(message.getData().toByteArray());
+                String clientKey=new String(message.getData());
 
                 ClientNode clientNode;
                 clientNode= ServerBeanManager.getClientService().get(clientKey);
@@ -93,9 +93,9 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
      * @param ctx
      * @param message
      */
-    public  void saveClient2Cache(ClientNode client,ChannelHandlerContext ctx,ProxyMessageProtos.ProxyMessage message){
+    public  void saveClient2Cache(ClientNode client,ChannelHandlerContext ctx,ProxyMessage message){
 
-        String key=new String(message.getData().toByteArray());
+        String key=new String(message.getData());
         ctx.channel().attr(CommonConstant.ServerChannelAttributeKey.CLIENT_KEY).set(key);
         InetSocketAddress sa = (InetSocketAddress)ctx.channel().remoteAddress();
         client.setHost(sa.getAddress().getHostName());
@@ -131,7 +131,7 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
      */
     public void loginRespone(ChannelHandlerContext ctx,String msg,byte loginResult){
 
-        ProxyMessageProtos.ProxyMessage loginResp = ProxyMessageUtil.buildLoginResp(new byte[]{loginResult},msg.getBytes());
+        ProxyMessage loginResp = ProxyMessageUtil.buildLoginResp(new byte[]{loginResult},msg.getBytes());
         ctx.writeAndFlush(loginResp);
     }
 

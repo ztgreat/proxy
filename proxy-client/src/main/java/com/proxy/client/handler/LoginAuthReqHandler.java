@@ -1,7 +1,7 @@
 package com.proxy.client.handler;
 
 import com.proxy.client.service.ClientBeanManager;
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,13 +26,13 @@ public class LoginAuthReqHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        ProxyMessageProtos.ProxyMessage message = (ProxyMessageProtos.ProxyMessage) msg;
+        ProxyMessage message = (ProxyMessage) msg;
         // 如果是握手应答消息，需要判断是否认证成功
-        byte type = message.getType().toByteArray()[0];
+        byte type = message.getType()[0];
 
         if (type == CommonConstant.Login.TYPE_LOGIN_RESP) {
-            byte command=message.getCommand().byteAt(0);
-            String loginMesg=new String(message.getData().toByteArray());
+            byte command=message.getCommand()[0];
+            String loginMesg=new String(message.getData());
 
             if (command== CommonConstant.Login.LOGIN_SUCCESS){
                 logger.info("客户端认证登录成功");

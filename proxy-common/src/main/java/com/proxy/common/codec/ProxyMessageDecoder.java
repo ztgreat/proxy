@@ -1,7 +1,7 @@
 package com.proxy.common.codec;
 
 
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.util.ProxyMessageUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -58,7 +58,7 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
       int length=frame.readInt();
       byte[] msg=new byte[length];
       frame.readBytes(msg);
-      ProxyMessageProtos.ProxyMessage proxyMessage = ProxyMessageUtil.decode(msg);
+      ProxyMessage proxyMessage = ProxyMessageUtil.decode(msg);
       frame.release();
       return  proxyMessage;
     }

@@ -2,7 +2,7 @@ package com.proxy.client.handler;
 
 import com.proxy.client.service.ClientBeanManager;
 import com.proxy.common.entity.client.RealServer;
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import io.netty.bootstrap.Bootstrap;
@@ -28,8 +28,8 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        ProxyMessageProtos.ProxyMessage message= (ProxyMessageProtos.ProxyMessage) msg;
-        byte type = message.getType().toByteArray()[0];
+        ProxyMessage message= (ProxyMessage) msg;
+        byte type = message.getType()[0];
         switch (type) {
             case CommonConstant.MessageType.TYPE_TRANSFER:
                 handleTransferMessage(ctx, message);
@@ -47,27 +47,27 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 break;
         }
     }
-    private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessageProtos.ProxyMessage proxyMessage) {
+    private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
         Long sessionID = proxyMessage.getSessionID();
 
         RealServer realServer= ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
         Channel realServerChannel = null;
         if ((realServer !=null) &&  (realServerChannel=realServer.getChannel()) != null) {
 
-            byte requestType=proxyMessage.getProxyType().byteAt(0);
+            byte requestType=proxyMessage.getProxyType()[0];
             if (requestType== CommonConstant.ProxyType.TCP){
 
                 //1.如果消息是tcp类型
-                ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().toByteArray().length);
-                buf.writeBytes(proxyMessage.getData().toByteArray());
+                ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
+                buf.writeBytes(proxyMessage.getData());
                 realServerChannel.writeAndFlush(buf);
                 logger.debug("客户端转发tcp请求至真实服务器");
 
             }else if(requestType== CommonConstant.ProxyType.HTTP) {
 
                 //2.如果消息是http类型
-                ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().toByteArray().length);
-                buf.writeBytes(proxyMessage.getData().toByteArray());
+                ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
+                buf.writeBytes(proxyMessage.getData());
                 ctx.fireChannelRead(buf);
             }
 
@@ -85,20 +85,20 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
         }
     }
-    private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessageProtos.ProxyMessage proxyMessage) {
+    private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
         final Channel channel = ctx.channel();
 
         //会话id
         final Long sessionID = proxyMessage.getSessionID();
         //代理类型
-        int proxyType=proxyMessage.getProxyType().byteAt(0)& 0xFF;
+        int proxyType=proxyMessage.getProxyType()[0]& 0xFF;
 
         //代理服务器地址,用于重定向的时候替换header 中的Location地址
-        final String proxyServer=new String(proxyMessage.getCommand().toByteArray());
+        final String proxyServer=new String(proxyMessage.getCommand());
 
         //真实服务器地址：ip:port
-        String[] serverInfo = new String(proxyMessage.getData().toByteArray()).split(":");
+        String[] serverInfo = new String(proxyMessage.getData()).split(":");
 
         //真实服务器ip
         final  String ip = serverInfo[0];
@@ -127,22 +127,22 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                     ClientBeanManager.getProxyService().addRealServerChannel(sessionID,realServer,realServerChannel,String.valueOf(proxyType),proxyServer);
 
 
-                    ProxyMessageProtos.ProxyMessage proxyMessage = ProxyMessageUtil.buildConnectSuccess(sessionID,null);
+                    ProxyMessage proxyMessage = ProxyMessageUtil.buildConnectSuccess(sessionID,null);
                     channel.writeAndFlush(proxyMessage);
                 } else {
                     logger.error("客户端连接真实服务器({})失败:{}",ip+":"+port+" "+future.cause().getMessage());
-                    ProxyMessageProtos.ProxyMessage proxyMessage = ProxyMessageUtil.buildConnectFail(sessionID,null);
+                    ProxyMessage proxyMessage = ProxyMessageUtil.buildConnectFail(sessionID,null);
                     channel.writeAndFlush(proxyMessage);
                 }
             }
         });
     }
 
-    private void handleDisConnectMessage(ChannelHandlerContext ctx, ProxyMessageProtos.ProxyMessage proxyMessage) {
+    private void handleDisConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
         Long sessionID = proxyMessage.getSessionID();
 
-        String[] serverInfo = new String(proxyMessage.getData().toByteArray()).split(":");
+        String[] serverInfo = new String(proxyMessage.getData()).split(":");
         final  String ip = serverInfo[0];
         final  int port = Integer.parseInt(serverInfo[1]);
 

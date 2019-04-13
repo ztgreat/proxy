@@ -1,7 +1,7 @@
 package com.proxy.client.handler;
 
 import com.proxy.client.service.ClientBeanManager;
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import io.netty.buffer.ByteBuf;
@@ -46,7 +46,7 @@ public class TCPHandler extends ChannelInboundHandlerAdapter {
                 buf.release();
 
                 Long sessionID= ClientBeanManager.getProxyService().getRealServerChannelSessionID(realServerChannel);
-                ProxyMessageProtos.ProxyMessage proxyMessage = ProxyMessageUtil.buildMsg(sessionID, CommonConstant.MessageType.TYPE_TRANSFER,null,null,null,data);
+                ProxyMessage proxyMessage = ProxyMessageUtil.buildMsg(sessionID, CommonConstant.MessageType.TYPE_TRANSFER,null,null,null,data);
                 channel.writeAndFlush(proxyMessage);
             }
         }
@@ -68,7 +68,7 @@ public class TCPHandler extends ChannelInboundHandlerAdapter {
         ClientBeanManager.getProxyService().removeRealServerChannel(sessionID);
 
         //
-        ProxyMessageProtos.ProxyMessage proxyMessage = ProxyMessageUtil.buildReConnect(sessionID,null);
+        ProxyMessage proxyMessage = ProxyMessageUtil.buildReConnect(sessionID,null);
         Channel channel= ClientBeanManager.getProxyService().getChannel();
         channel.writeAndFlush(proxyMessage);
     }

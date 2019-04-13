@@ -3,7 +3,7 @@ package com.proxy.server.handler;
 
 import com.proxy.common.entity.server.ClientNode;
 import com.proxy.common.entity.server.ProxyRealServer;
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import com.proxy.server.service.ServerBeanManager;
@@ -30,15 +30,15 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        if (msg instanceof  ProxyMessageProtos.ProxyMessage){
+        if (msg instanceof  ProxyMessage){
 
-            ProxyMessageProtos.ProxyMessage message = (ProxyMessageProtos.ProxyMessage) msg;
-            byte type = message.getType().toByteArray()[0];
+            ProxyMessage message = (ProxyMessage) msg;
+            byte type = message.getType()[0];
             //如果是心跳请求消息
             if (type == CommonConstant.HearBeat.TYPE_HEARTBEAT_REQ) {
                 logger.info("收到客户端心跳消息");
                 //构造心态响应消息
-                ProxyMessageProtos.ProxyMessage heartBeat = ProxyMessageUtil.buildHeartBeatResp();
+                ProxyMessage heartBeat = ProxyMessageUtil.buildHeartBeatResp();
                 ctx.writeAndFlush(heartBeat);
             } else{
                 //向上传递消息

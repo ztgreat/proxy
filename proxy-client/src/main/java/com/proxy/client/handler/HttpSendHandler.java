@@ -3,7 +3,7 @@ package com.proxy.client.handler;
 
 import com.proxy.client.service.ClientBeanManager;
 import com.proxy.common.codec.http.MyHttpResponseEncoder;
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import io.netty.buffer.ByteBuf;
@@ -86,7 +86,7 @@ public class HttpSendHandler extends ChannelInboundHandlerAdapter{
             buf.readBytes(data);
             buf.release();
             Long sessionID= ClientBeanManager.getProxyService().getRealServerChannelSessionID(realServerChannel);
-            ProxyMessageProtos.ProxyMessage proxyMessage = ProxyMessageUtil.buildMsg(sessionID, CommonConstant.MessageType.TYPE_TRANSFER,null,null,null,data);
+            ProxyMessage proxyMessage = ProxyMessageUtil.buildMsg(sessionID, CommonConstant.MessageType.TYPE_TRANSFER,null,null,null,data);
             channel.writeAndFlush(proxyMessage);
         }
     }

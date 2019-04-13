@@ -1,7 +1,7 @@
 package com.proxy.server.handler;
 
 import com.proxy.common.entity.server.ClientNode;
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.server.event.TransferEvent;
 import com.proxy.server.service.ServerBeanManager;
@@ -23,8 +23,8 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        ProxyMessageProtos.ProxyMessage message= (ProxyMessageProtos.ProxyMessage) msg;
-        byte type = message.getType().toByteArray()[0];
+        ProxyMessage message= (ProxyMessage) msg;
+        byte type = message.getType()[0];
         switch (type) {
             // 代理客户端与真实服务器连接成功
             case CommonConstant.MessageType.TYPE_CONNECT_SUCCESS:
@@ -54,13 +54,13 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
      * @param ctx
      * @param proxyMessage
      */
-    private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessageProtos.ProxyMessage proxyMessage) {
+    private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
         long sessionId=proxyMessage.getSessionID();
         Channel userChannel= ServerBeanManager.getUserSessionService().get(sessionId);
         if (userChannel != null) {
-            ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().toByteArray().length);
-            buf.writeBytes(proxyMessage.getData().toByteArray());
+            ByteBuf buf = ctx.alloc().buffer(proxyMessage.getData().length);
+            buf.writeBytes(proxyMessage.getData());
             userChannel.writeAndFlush(buf);
             logger.debug("代理服务器将数据转发给用户");
         }else {
@@ -73,7 +73,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
      * @param ctx
      * @param proxyMessage
      */
-    private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessageProtos.ProxyMessage proxyMessage) {
+    private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
         String key= ServerBeanManager.getClientService().getClientKey(ctx.channel());
         ClientNode node = ServerBeanManager.getClientService().get(key);
@@ -95,7 +95,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
      * @param ctx
      * @param proxyMessage
      */
-    private void handleReConnectMessage(ChannelHandlerContext ctx, ProxyMessageProtos.ProxyMessage proxyMessage) {
+    private void handleReConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
         long sessionId=proxyMessage.getSessionID();
         Channel userChannel = ServerBeanManager.getUserSessionService().get(sessionId);
@@ -112,7 +112,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
      * @param ctx
      * @param proxyMessage
      */
-    private void handleDisConnectMessage(ChannelHandlerContext ctx, ProxyMessageProtos.ProxyMessage proxyMessage) {
+    private void handleDisConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
         logger.info("代理客户端与真实服务器连接失败");
         long sessionId=proxyMessage.getSessionID();

@@ -2,7 +2,7 @@ package com.proxy.client.handler;
 
 
 import com.proxy.client.service.ClientBeanManager;
-import com.proxy.common.protobuf.ProxyMessageProtos;
+import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -19,10 +19,10 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        if (msg instanceof  ProxyMessageProtos.ProxyMessage){
+        if (msg instanceof ProxyMessage){
 
-            ProxyMessageProtos.ProxyMessage message = (ProxyMessageProtos.ProxyMessage) msg;
-            byte type = message.getType().toByteArray()[0];
+            ProxyMessage message = (ProxyMessage) msg;
+            byte type = message.getType()[0];
             //心跳响应消息
             if (type == CommonConstant.HearBeat.TYPE_HEARTBEAT_RESP) {
                 logger.info("收到服务器心跳响应消息");
@@ -98,7 +98,7 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
      */
     public  void sendHeartBeat(ChannelHandlerContext ctx){
         if (ctx!=null && ctx.channel().isActive()){
-            ProxyMessageProtos.ProxyMessage heatBeat= ProxyMessageUtil.buildHeartBeatReq();
+            ProxyMessage heatBeat= ProxyMessageUtil.buildHeartBeatReq();
             ctx.writeAndFlush(heatBeat);
         }
     }
