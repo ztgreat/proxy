@@ -32,9 +32,9 @@ public class ProxyServer implements LifeCycle{
     private static Logger logger = LoggerFactory.getLogger(ProxyServer.class);
 
     /**
-     * 最大帧长度
+     * 最大帧长度 5M
      */
-    private static final int MAX_FRAME_LENGTH = 2 * 1024 * 1024;
+    private static final int MAX_FRAME_LENGTH = 5 * 1024 * 1024;
     /**
      * 长度域偏移
      */

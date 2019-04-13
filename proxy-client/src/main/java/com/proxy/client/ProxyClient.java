@@ -36,9 +36,9 @@ public class ProxyClient {
     private  int port;
 
     /**
-     * 2M
+     * 5M
      */
-    private int maxContentLength = 2*1024 * 1024;
+    private int maxContentLength = 5*1024 * 1024;
 
 
     /**
@@ -94,6 +94,7 @@ public class ProxyClient {
                     @Override
                     public void initChannel(SocketChannel ch)
                             throws Exception {
+                        //ch.pipeline().addLast("logs", new LoggingHandler(LogLevel.DEBUG));
                         ch.pipeline().addLast("idleStateHandler", new IdleStateHandler(10*3, 15*3, 20*3));
                         ch.pipeline().addLast(new ProxyMessageDecoder(2*1024*1024,0,4));
                         ch.pipeline().addLast(new ProxyMessageEncoder());
