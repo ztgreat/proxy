@@ -10,8 +10,9 @@ public class ConfigDao {
 
     private  static  Map<String,String >config;
     public Map<String,String> readConfig() throws  Exception{
-        if (config!=null)
+        if (config!=null){
             return config;
+        }
         InputStream in=this.getClass().getClassLoader().getResourceAsStream("client.properties");
         if(in ==null){
             String filePath = "../conf/client.properties";

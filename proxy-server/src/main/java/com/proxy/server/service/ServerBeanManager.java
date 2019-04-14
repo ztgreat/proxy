@@ -63,8 +63,9 @@ public class ServerBeanManager {
 
 
     public static ServerBootstrap getBootstrap() {
-        if (bootstrap!=null)
+        if (bootstrap!=null){
             return bootstrap.clone();
+        }
         return null;
     }
     public static void setBootstrap(ServerBootstrap boot) {

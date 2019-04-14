@@ -1,10 +1,8 @@
 package com.proxy.server.handler.traffic.handler;
 
 import com.google.common.util.concurrent.RateLimiter;
-import com.proxy.common.util.LoggerUtils;
 import com.proxy.server.ProxyServer;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;

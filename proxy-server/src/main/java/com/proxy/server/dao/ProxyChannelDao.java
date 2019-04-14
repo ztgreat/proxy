@@ -38,6 +38,7 @@ public class ProxyChannelDao {
     public ChannelFuture bind(final Integer serverPort,final ServerBootstrap bootstrap,int proxyType,Object saveKey) throws InterruptedException {
 
         return bootstrap.bind(serverPort).addListener(new ChannelFutureListener() {
+            @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
 
                 if (channelFuture.isSuccess()){
@@ -68,19 +69,19 @@ public class ProxyChannelDao {
      * @return
      */
     public  boolean unBind(Integer serverPort){
-        if (serverPort==null)
+        if (serverPort==null) {
             return false;
+        }
         ProxyChannel proxyChannel= proxyChannelCache.get(serverPort);
-        if (proxyChannel==null)
+        if (proxyChannel==null){
             return false;
+        }
         if(proxyChannel.getChannel()!=null && proxyChannel.getChannel().isActive()){
             proxyChannel.getChannel().close();
         }
         //不移除
-//        proxyChannelCache.remove(serverPort);
+        //proxyChannelCache.remove(serverPort);
         return  true;
-
-
     }
 
     /**
