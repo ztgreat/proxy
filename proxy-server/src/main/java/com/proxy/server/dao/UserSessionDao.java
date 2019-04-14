@@ -33,20 +33,23 @@ public class UserSessionDao {
         return  sessionIDToChannel.get(sessionID);
     }
     public Long getSessionID(Channel channel){
-        if (channel.attr(CommonConstant.UserChannelAttributeKey.USER_ID).get()==null)
+        if (channel.attr(CommonConstant.UserChannelAttributeKey.USER_ID).get()==null){
             return null;
+        }
         return Long.valueOf(channel.attr(CommonConstant.UserChannelAttributeKey.USER_ID).get());
     }
 
     public Integer getType(Channel channel){
-        if (channel.attr(CommonConstant.UserChannelAttributeKey.TYPE).get()==null)
+        if (channel.attr(CommonConstant.UserChannelAttributeKey.TYPE).get()==null){
             return null;
+        }
         return Integer.valueOf(channel.attr(CommonConstant.UserChannelAttributeKey.TYPE).get());
     }
 
     public String getClientKey(Channel channel) {
-        if (channel.attr(CommonConstant.UserChannelAttributeKey.CLIENT_KEY).get()==null)
+        if (channel.attr(CommonConstant.UserChannelAttributeKey.CLIENT_KEY).get()==null){
             return null;
+        }
         return channel.attr(CommonConstant.UserChannelAttributeKey.CLIENT_KEY).get();
     }
     public Map<Long,Channel> getAll(){

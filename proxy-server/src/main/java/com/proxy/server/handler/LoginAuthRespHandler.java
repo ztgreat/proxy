@@ -31,7 +31,7 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
             ProxyMessage message= (ProxyMessage) msg;
 
             //获取消息类型
-            byte type=message.getType()[0];
+            byte type=message.getType();
 
             //如果是心跳请求消息
             if ( type== CommonConstant.Login.TYPE_LOGIN_REQ){
@@ -42,6 +42,8 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter{
                 logger.info("客户端({})请求登录认证",sa.getHostName());
 
                 String clientKey=new String(message.getData());
+
+
 
                 ClientNode clientNode;
                 clientNode= ServerBeanManager.getClientService().get(clientKey);

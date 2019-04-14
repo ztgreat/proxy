@@ -22,13 +22,14 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof ProxyMessage){
 
             ProxyMessage message = (ProxyMessage) msg;
-            byte type = message.getType()[0];
+            byte type = message.getType();
             //心跳响应消息
             if (type == CommonConstant.HearBeat.TYPE_HEARTBEAT_RESP) {
                 logger.info("收到服务器心跳响应消息");
             }
-            else
+            else{
                 ctx.fireChannelRead(msg);
+            }
         }
         else {
             ctx.fireChannelRead(msg);

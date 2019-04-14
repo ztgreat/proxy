@@ -10,11 +10,12 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class ProxyMessageEncoder extends MessageToByteEncoder<ProxyMessage> {
 
 
+    @Override
     protected void encode(ChannelHandlerContext ctx, ProxyMessage msg, ByteBuf in) throws Exception {
 
-        if (msg==null)
+        if (msg==null){
             throw  new Exception("The encode message is null");
-
+        }
         byte[] bytes = ProxyMessageUtil.encode(msg);
         in.writeInt(bytes.length);
         in.writeBytes(bytes);

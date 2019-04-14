@@ -24,7 +24,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         ProxyMessage message= (ProxyMessage) msg;
-        byte type = message.getType()[0];
+        byte type = message.getType();
         switch (type) {
             // 代理客户端与真实服务器连接成功
             case CommonConstant.MessageType.TYPE_CONNECT_SUCCESS:

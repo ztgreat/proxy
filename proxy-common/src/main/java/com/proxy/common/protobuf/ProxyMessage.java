@@ -1,6 +1,8 @@
 package com.proxy.common.protobuf;
 
 
+import com.proxy.common.protocol.CommonConstant;
+
 /**
  * 代理消息
  */
@@ -19,17 +21,18 @@ public class ProxyMessage {
     /**
      * 类型
      */
-    byte[] type ;
+    Byte type ;
 
     /**
      * 代理类型
+     * @see CommonConstant.ProxyType
      */
-    byte[] proxyType;
+    Byte proxyType;
 
     /**
      * 优先级
      */
-    byte[] priority;
+    Byte priority;
 
     /**
      * 命令
@@ -40,7 +43,6 @@ public class ProxyMessage {
      * 数据
      */
     byte[] data;
-
 
     public Integer getCrcCode() {
         return crcCode;
@@ -58,27 +60,27 @@ public class ProxyMessage {
         this.sessionID = sessionID;
     }
 
-    public byte[] getType() {
+    public Byte getType() {
         return type;
     }
 
-    public void setType(byte[] type) {
+    public void setType(Byte type) {
         this.type = type;
     }
 
-    public byte[] getProxyType() {
+    public Byte getProxyType() {
         return proxyType;
     }
 
-    public void setProxyType(byte[] proxyType) {
+    public void setProxyType(Byte proxyType) {
         this.proxyType = proxyType;
     }
 
-    public byte[] getPriority() {
+    public Byte getPriority() {
         return priority;
     }
 
-    public void setPriority(byte[] priority) {
+    public void setPriority(Byte priority) {
         this.priority = priority;
     }
 
@@ -102,9 +104,9 @@ public class ProxyMessage {
     public static final class Builder {
         Integer crcCode ;
         Long sessionID;
-        byte[] type ;
-        byte[] proxyType;
-        byte[] priority;
+        Byte type ;
+        Byte proxyType;
+        Byte priority;
         byte[] command;
         byte[] data;
 
@@ -125,17 +127,17 @@ public class ProxyMessage {
             return this;
         }
 
-        public Builder type(byte[] type) {
+        public Builder type(Byte type) {
             this.type = type;
             return this;
         }
 
-        public Builder proxyType(byte[] proxyType) {
+        public Builder proxyType(Byte proxyType) {
             this.proxyType = proxyType;
             return this;
         }
 
-        public Builder priority(byte[] priority) {
+        public Builder priority(Byte priority) {
             this.priority = priority;
             return this;
         }

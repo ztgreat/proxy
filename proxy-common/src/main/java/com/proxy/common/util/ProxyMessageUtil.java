@@ -1,6 +1,5 @@
 package com.proxy.common.util;
 
-import com.google.protobuf.ByteString;
 import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.CommonConstant;
 
@@ -15,15 +14,16 @@ public class ProxyMessageUtil {
      * @return
      */
     public static  byte[] encode(ProxyMessage message){
-        if (message==null)
+        if (message==null){
             return null;
+        }
         return ProtostuffUtil.serialize(message);
     }
 
     /**
      * 对ProxyMessage 进行 解码
-     * @param message
-     * @return
+     * @param message 需要解码的字节数组
+     * @return ProxyMessage
      */
     public  static ProxyMessage decode(byte[] message) {
         return ProtostuffUtil.deserialize(message,ProxyMessage.class);
@@ -33,163 +33,105 @@ public class ProxyMessageUtil {
      * 构造登录请求消息
      * @param command 命令
      * @param data 数据
-     * @return
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildLoginReq(byte[] command,byte[] data){
-        ProxyMessage.Builder builder= ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        builder.type(new byte[]{CommonConstant.Login.TYPE_LOGIN_REQ});
-        if (command!=null)
-            builder.command(command);
-        if (data!=null)
-            builder.data(data);
-        return  builder.build();
+        return buildMsg(null,CommonConstant.Login.TYPE_LOGIN_REQ,null,null,command,data);
     }
 
     /**
      * 构造登录响应消息
-     * @return
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildLoginResp(byte[] command,byte[] data){
-        ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        builder.type(new byte[]{CommonConstant.Login.TYPE_LOGIN_RESP});
-
-        if (command!=null)
-            builder.command(command);
-
-        if (data!=null)
-            builder.data(data);
-        return  builder.build();
+        return  buildMsg(null,CommonConstant.Login.TYPE_LOGIN_RESP,null,null,command,data);
     }
 
     /**
      * 心跳请求消息
-     * @return
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildHeartBeatReq(){
-        ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        builder.type(new byte[]{CommonConstant.HearBeat.TYPE_HEARTBEAT_REQ});
-        return  builder.build();
+        return  buildMsg(null,CommonConstant.HearBeat.TYPE_HEARTBEAT_REQ,null,null,null,null);
     }
 
     /**
      * 心跳响应消息
-     * @return
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildHeartBeatResp(){
-        ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        builder.type(new byte[]{CommonConstant.HearBeat.TYPE_HEARTBEAT_RESP});
-        return  builder.build();
+        return  buildMsg(null,CommonConstant.HearBeat.TYPE_HEARTBEAT_RESP,null,null,null,null);
     }
 
     /**
      * 连接请求消息
-     * @param sessionID
-     * @param data
-     * @return
+     * @param sessionID 回话id
+     * @param data 数据
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildConnect(Long sessionID,byte[] data){
-        ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        builder.type(new byte[]{CommonConstant.MessageType.TYPE_CONNECT_REALSERVER});
-        builder.sessionID(sessionID);
-        if (data!=null)
-            builder.data(data);
-        return  builder.build();
+        return  buildMsg(sessionID,CommonConstant.MessageType.TYPE_CONNECT_REALSERVER,null,null,null,data);
     }
 
     /**
      * 需要用户重新请求建立连接
-     * @param sessionID
-     * @param data
-     * @return
+     * @param sessionID 回话id
+     * @param data 数据
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildReConnect(Long sessionID,byte[] data){
-        ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        builder.type(new byte[]{CommonConstant.MessageType.TYPE_RECONNECT});
-        builder.sessionID(sessionID);
-        if (data!=null)
-            builder.data(data);
-        return  builder.build();
+        return  buildMsg(sessionID,CommonConstant.MessageType.TYPE_RECONNECT,null,null,null,data);
     }
 
     /**
      * 连接失败消息
-     * @param sessionID
-     * @param data
-     * @return
+     * @param sessionID 回话id
+     * @param data  数据
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildConnectFail(Long sessionID,byte[] data){
-        ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        ByteString type=ByteString.copyFrom(new byte[]{CommonConstant.MessageType.TYPE_CONNECT_FAIL});
-        builder.type(new byte[]{CommonConstant.MessageType.TYPE_CONNECT_FAIL});
-        builder.sessionID(sessionID);
-        if (data!=null)
-            builder.data(data);
-        return  builder.build();
+        return  buildMsg(sessionID,CommonConstant.MessageType.TYPE_CONNECT_FAIL,null,null,null,data);
     }
     /**
      * 连接成功消息
-     * @param sessionID
-     * @param data
-     * @return
+     * @param sessionID 回话id
+     * @param data 数据
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildConnectSuccess(Long sessionID,byte[] data){
-        ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        builder.type(new byte[]{CommonConstant.MessageType.TYPE_CONNECT_SUCCESS});
-        builder.sessionID(sessionID);
-        if (data!=null)
-            builder.data(data);
-        return  builder.build();
+        return  buildMsg(sessionID,CommonConstant.MessageType.TYPE_CONNECT_SUCCESS,null,null,null,data);
     }
 
 
     /**
      * 连接断开消息
-     * @param sessionID
-     * @param data
-     * @return
+     * @param sessionID 回话id
+     * @param data 数据
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildDisConnect(Long sessionID,byte[] data){
-        ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
-        builder.crcCode(CommonConstant.CRCCODE);
-        builder.type(new byte[]{CommonConstant.MessageType.TYPE_DISCONNECT});
-        builder.sessionID(sessionID);
-        if (data!=null)
-            builder.data(data);
-        return  builder.build();
+        return  buildMsg(sessionID,CommonConstant.MessageType.TYPE_DISCONNECT,null,null,null,data);
     }
 
     /**
      * 构建通信消息
-     * @param sessionID
-     * @param type
-     * @param priority
-     * @param command
-     * @param data
-     * @return
+     * @param sessionID 回话id
+     * @param type 消息类型
+     * @param priority 优先级
+     * @param command 命令
+     * @param data 数据
+     * @return ProxyMessage
      */
     public  static ProxyMessage buildMsg(Long sessionID,Byte type,Byte proxyType,
-                                                            Byte priority,byte[] command,byte[] data){
+                                         Byte priority,byte[] command,byte[] data){
         ProxyMessage.Builder builder=ProxyMessage.Builder.aProxyMessage();
         builder.crcCode(CommonConstant.CRCCODE);
         builder.sessionID(sessionID);
-        builder.type(new byte[]{type});
-        if (proxyType!=null){
-            builder.proxyType(new byte[]{proxyType});
-        }
-        if (priority!=null)
-            builder.priority(new byte[]{priority});
-        if (command!=null)
-            builder.command(command);
-        if (data!=null)
-            builder.data(data);
+        builder.type(type);
+        builder.proxyType(proxyType);
+        builder.priority(priority);
+        builder.command(command);
+        builder.data(data);
         return  builder.build();
     }
 }

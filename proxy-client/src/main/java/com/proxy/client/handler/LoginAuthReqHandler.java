@@ -28,7 +28,7 @@ public class LoginAuthReqHandler extends ChannelInboundHandlerAdapter {
 
         ProxyMessage message = (ProxyMessage) msg;
         // 如果是握手应答消息，需要判断是否认证成功
-        byte type = message.getType()[0];
+        byte type = message.getType();
 
         if (type == CommonConstant.Login.TYPE_LOGIN_RESP) {
             byte command=message.getCommand()[0];

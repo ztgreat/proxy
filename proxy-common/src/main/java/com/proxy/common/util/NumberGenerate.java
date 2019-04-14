@@ -37,8 +37,9 @@ public abstract class NumberGenerate {
 	}
 
 	private synchronized String getId() {
-		if (sequence > getLimit())
+		if (sequence > getLimit()){
 			sequence = 1;
+		}
 		// 清空stringbuffer中生成的编号
 		builder.setLength(0);
 		long time = System.currentTimeMillis();

@@ -92,8 +92,9 @@ public class RealServer {
     }
 
     public  String getAddress(){
-        if (realHost ==null || realHostPort ==null)
+        if (realHost ==null || realHostPort ==null){
             return null;
+        }
         return new StringBuilder(realHost).append(":").append(realHostPort).toString();
     }
 

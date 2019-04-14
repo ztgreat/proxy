@@ -33,7 +33,7 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
         if (msg instanceof  ProxyMessage){
 
             ProxyMessage message = (ProxyMessage) msg;
-            byte type = message.getType()[0];
+            byte type = message.getType();
             //如果是心跳请求消息
             if (type == CommonConstant.HearBeat.TYPE_HEARTBEAT_REQ) {
                 logger.info("收到客户端心跳消息");

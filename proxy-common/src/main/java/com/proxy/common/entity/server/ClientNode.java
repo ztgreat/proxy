@@ -113,13 +113,15 @@ public class ClientNode {
     }
 
     public void addRealServer(Object saveKey, ProxyRealServer nodeMapping){
-        if (saveKey!=null)
+        if (saveKey!=null){
             this.serverPort2RealServer.put(saveKey,nodeMapping);
+        }
     }
 
     public void removeNodeMappings(Integer proxyPort) {
-        if (this.serverPort2RealServer.containsKey(proxyPort))
+        if (this.serverPort2RealServer.containsKey(proxyPort)){
             this.serverPort2RealServer.remove(proxyPort);
+        }
     }
 
     public String getDescription() {

@@ -29,8 +29,9 @@ public class LoggerUtils {
 	 *            输出信息
 	 */
 	public static void debug(Class<? extends Object> clazz, String message) {
-		if (!isDebug)
+		if (!isDebug){
 			return;
+		}
 		Logger logger = LoggerFactory.getLogger(clazz);
 		logger.debug(message);
 	}
@@ -44,8 +45,9 @@ public class LoggerUtils {
 	 *            输出信息
 	 */
 	public static void info(Class<? extends Object> clazz, String message) {
-		if (!isDebug)
+		if (!isDebug){
 			return;
+		}
 		Logger logger = LoggerFactory.getLogger(clazz);
 		logger.info(message);
 	}
@@ -61,8 +63,9 @@ public class LoggerUtils {
 	 *            输出信息value
 	 */
 	public static void fmtDebug(Class<? extends Object> clazz, String fmtString, Object... value) {
-		if (!isDebug)
+		if (!isDebug) {
 			return;
+		}
 		if (StringUtils.isBlank(fmtString)) {
 			return;
 		}

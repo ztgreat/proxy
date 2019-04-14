@@ -29,7 +29,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         ProxyMessage message= (ProxyMessage) msg;
-        byte type = message.getType()[0];
+        byte type = message.getType();
         switch (type) {
             case CommonConstant.MessageType.TYPE_TRANSFER:
                 handleTransferMessage(ctx, message);
@@ -54,7 +54,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         Channel realServerChannel = null;
         if ((realServer !=null) &&  (realServerChannel=realServer.getChannel()) != null) {
 
-            byte requestType=proxyMessage.getProxyType()[0];
+            byte requestType=proxyMessage.getProxyType();
             if (requestType== CommonConstant.ProxyType.TCP){
 
                 //1.如果消息是tcp类型
@@ -92,7 +92,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         //会话id
         final Long sessionID = proxyMessage.getSessionID();
         //代理类型
-        int proxyType=proxyMessage.getProxyType()[0]& 0xFF;
+        int proxyType=proxyMessage.getProxyType() & 0xFF;
 
         //代理服务器地址,用于重定向的时候替换header 中的Location地址
         final String proxyServer=new String(proxyMessage.getCommand());
@@ -109,6 +109,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
         realServerBootStrap.connect(ip, port).addListener(new ChannelFutureListener() {
 
+            @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 if (future.isSuccess()) {
 
