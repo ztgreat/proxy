@@ -5,6 +5,7 @@ import io.netty.channel.Channel;
 
 /**
  * 服务器代理通道信息
+ *
  * @author ztgreat
  */
 public class ProxyChannel {

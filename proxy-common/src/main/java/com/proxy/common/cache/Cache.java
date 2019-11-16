@@ -3,21 +3,23 @@ package com.proxy.common.cache;
 import java.util.Map;
 
 /**
- * @author  ztgreat
+ * @author ztgreat
  */
 public interface Cache<K, V> {
 
 
     /**
      * 通过 key 获取数据
+     *
      * @param key
      * @return
      * @throws RuntimeException
      */
-    V  get(K key) throws RuntimeException;
+    V get(K key) throws RuntimeException;
 
     /**
      * 保存 key-value
+     *
      * @param key
      * @param value
      * @return
@@ -27,6 +29,7 @@ public interface Cache<K, V> {
 
     /**
      * remove key
+     *
      * @param key
      * @return
      * @throws RuntimeException
@@ -35,6 +38,7 @@ public interface Cache<K, V> {
 
     /**
      * 获取cache size
+     *
      * @return
      * @throws RuntimeException
      */
@@ -42,6 +46,7 @@ public interface Cache<K, V> {
 
     /**
      * 清空cache
+     *
      * @return
      * @throws RuntimeException
      */
@@ -49,12 +54,11 @@ public interface Cache<K, V> {
 
     /**
      * 获取全部数据
+     *
      * @return
      * @throws RuntimeException
      */
-    Map<K,V>getAll() throws  RuntimeException;
-
-
+    Map<K, V> getAll() throws RuntimeException;
 
 
 }

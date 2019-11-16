@@ -19,19 +19,17 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        if (msg instanceof ProxyMessage){
+        if (msg instanceof ProxyMessage) {
 
             ProxyMessage message = (ProxyMessage) msg;
             byte type = message.getType();
             //心跳响应消息
             if (type == CommonConstant.HearBeat.TYPE_HEARTBEAT_RESP) {
                 logger.info("收到服务器心跳响应消息");
-            }
-            else{
+            } else {
                 ctx.fireChannelRead(msg);
             }
-        }
-        else {
+        } else {
             ctx.fireChannelRead(msg);
         }
     }
@@ -54,7 +52,7 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
                 default:
                     break;
             }
-        }else {
+        } else {
             super.userEventTriggered(ctx, evt);
         }
 
@@ -78,6 +76,7 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 与服务器失去连接调用
+     *
      * @param ctx
      * @throws Exception
      */
@@ -88,18 +87,19 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("发生异常:清理数据,客户端退出"+cause.getMessage());
+        logger.error("发生异常:清理数据,客户端退出" + cause.getMessage());
         ClientBeanManager.getProxyService().clear();
         ctx.channel().close();
     }
 
     /**
      * 发送心跳包
+     *
      * @param ctx
      */
-    public  void sendHeartBeat(ChannelHandlerContext ctx){
-        if (ctx!=null && ctx.channel().isActive()){
-            ProxyMessage heatBeat= ProxyMessageUtil.buildHeartBeatReq();
+    public void sendHeartBeat(ChannelHandlerContext ctx) {
+        if (ctx != null && ctx.channel().isActive()) {
+            ProxyMessage heatBeat = ProxyMessageUtil.buildHeartBeatReq();
             ctx.writeAndFlush(heatBeat);
         }
     }

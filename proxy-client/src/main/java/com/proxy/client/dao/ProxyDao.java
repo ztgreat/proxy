@@ -10,49 +10,51 @@ import io.netty.channel.Channel;
 
 public class ProxyDao {
 
-    private static CacheManager<Long,RealServer> cacheManager =new MemoryCacheManager<Long,Channel>();
+    private static CacheManager<Long, RealServer> cacheManager = new MemoryCacheManager<Long, Channel>();
 
-    private static Cache<Long,RealServer> realServerChannels = cacheManager.getCache("proxy_cache");
+    private static Cache<Long, RealServer> realServerChannels = cacheManager.getCache("proxy_cache");
 
     /**
      * 代理客户端和代理服务器的通道
      */
-    private  volatile Channel channel;
+    private volatile Channel channel;
 
-    public  void setChannel(Channel channel) {
+    public void setChannel(Channel channel) {
         this.channel = channel;
     }
 
-    public  Channel getChannel() {
+    public Channel getChannel() {
         return channel;
     }
 
-    public  Long getRealServerChannelSessionID(Channel realServerChannel) {
+    public Long getRealServerChannelSessionID(Channel realServerChannel) {
         return Long.valueOf(realServerChannel.attr(CommonConstant.SESSION_ID).get());
     }
 
-    public  RealServer getRealServerChannel(Long sessionID) {
+    public RealServer getRealServerChannel(Long sessionID) {
         return realServerChannels.get(sessionID);
     }
 
-    public  void addRealServerChannel(Long sessionID, RealServer realServer, Channel realServerChannel,String proxyType,String proxyServer) {
+    public void addRealServerChannel(Long sessionID, RealServer realServer, Channel realServerChannel, String proxyType, String proxyServer) {
         realServerChannels.put(sessionID, realServer);
         realServerChannel.attr(CommonConstant.SESSION_ID).set(String.valueOf(sessionID));
         realServerChannel.attr(CommonConstant.UserChannelAttributeKey.TYPE).set(proxyType);
         realServerChannel.attr(CommonConstant.UserChannelAttributeKey.PROXYSERVER).set(proxyServer);
     }
-    public void removeRealServerChannel(Long sessionID){
+
+    public void removeRealServerChannel(Long sessionID) {
         realServerChannels.remove(sessionID);
     }
 
-    public void clear(){
+    public void clear() {
         realServerChannels.clear();
-        this.channel=null;
+        this.channel = null;
     }
 
     public int getProxyType(Channel realServerChannel) {
         return Integer.valueOf(realServerChannel.attr(CommonConstant.UserChannelAttributeKey.TYPE).get());
     }
+
     public String getProxyServer(Channel realServerChannel) {
         return realServerChannel.attr(CommonConstant.UserChannelAttributeKey.PROXYSERVER).get();
     }

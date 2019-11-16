@@ -11,15 +11,16 @@ import io.netty.channel.nio.NioEventLoopGroup;
 /**
  * 将实例服务 放这里
  * 暂时这样处理
- * @// TODO: 2018/2/11  
+ *
  * @author ztgreat
+ * @// TODO: 2018/2/11
  */
 public class ServerBeanManager {
 
     /**
      * 代理服务 bootstrap
      */
-    private  static ServerBootstrap bootstrap;
+    private static ServerBootstrap bootstrap;
 
     /**
      * 代理服务端实例
@@ -34,40 +35,41 @@ public class ServerBeanManager {
     /**
      * 客户端服务,用于获取客户端信息
      */
-    private static ClientService clientService =new ClientService();
+    private static ClientService clientService = new ClientService();
 
     /**
      * 转发用户消息到代理客户端
      */
-    private static TransferService transferService=new TransferService();
+    private static TransferService transferService = new TransferService();
 
     /**
      * 用户回话管理
      */
-    private static UserSessionService userSessionService =new UserSessionService();
+    private static UserSessionService userSessionService = new UserSessionService();
 
     /**
      * 配置管理
      */
-    private static ConfigService configService=new ConfigService();
+    private static ConfigService configService = new ConfigService();
 
     /**
      * 代理通道管理
      */
-    private static ProxyChannelService proxyChannelService =new ProxyChannelService();
+    private static ProxyChannelService proxyChannelService = new ProxyChannelService();
 
     /**
      * 限流
      */
-    private static TrafficLimitHandler trafficLimitHandler=new TrafficLimitHandler();
+    private static TrafficLimitHandler trafficLimitHandler = new TrafficLimitHandler();
 
 
     public static ServerBootstrap getBootstrap() {
-        if (bootstrap!=null){
+        if (bootstrap != null) {
             return bootstrap.clone();
         }
         return null;
     }
+
     public static void setBootstrap(ServerBootstrap boot) {
         bootstrap = boot;
     }

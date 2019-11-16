@@ -11,7 +11,8 @@ import java.net.InetSocketAddress;
 
 /**
  * 流量统计 Handler
- * @author  ztgreat
+ *
+ * @author ztgreat
  */
 @ChannelHandler.Sharable
 public class TrafficCollectionHandler extends ChannelDuplexHandler {

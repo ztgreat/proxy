@@ -5,13 +5,14 @@ import com.proxy.common.cache.CacheManager;
 
 /**
  * 内存缓存管理器
- * @author  ztgreat
+ *
+ * @author ztgreat
  */
 public class MemoryCacheManager<K, V> implements CacheManager {
 
 
     @Override
     public Cache getCache(String name) {
-        return new MemoryCache<K,V>(name);
+        return new MemoryCache<K, V>(name);
     }
 }

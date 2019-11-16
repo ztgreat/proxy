@@ -13,7 +13,6 @@ import java.io.IOException;
 public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
 
 
-
     /**
      * @param maxFrameLength
      * @param lengthFieldOffset
@@ -26,7 +25,6 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
         super(maxFrameLength, lengthFieldOffset, lengthFieldLength, lengthAdjustment, initialBytesToStrip);
 
     }
-
 
 
     /**
@@ -52,16 +50,16 @@ public class ProxyMessageDecoder extends LengthFieldBasedFrameDecoder {
     @Override
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
 
-      ByteBuf frame=(ByteBuf)super.decode(ctx,in);
-      if (frame==null){
-          return  null;
-      }
-      int length=frame.readInt();
-      byte[] msg=new byte[length];
-      frame.readBytes(msg);
-      ProxyMessage proxyMessage = ProxyMessageUtil.decode(msg);
-      frame.release();
-      return  proxyMessage;
+        ByteBuf frame = (ByteBuf) super.decode(ctx, in);
+        if (frame == null) {
+            return null;
+        }
+        int length = frame.readInt();
+        byte[] msg = new byte[length];
+        frame.readBytes(msg);
+        ProxyMessage proxyMessage = ProxyMessageUtil.decode(msg);
+        frame.release();
+        return proxyMessage;
     }
 
 }

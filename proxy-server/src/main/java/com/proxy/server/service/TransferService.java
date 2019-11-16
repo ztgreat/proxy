@@ -19,17 +19,18 @@ public class TransferService {
 
     /**
      * 将消息转发给客户端
+     *
      * @param message
      */
-    public void toClient(Message message){
+    public void toClient(Message message) {
         executorService.submit(new TransferMessage(message));
     }
 
     /**
      * 启动转发服务
      */
-    public void start(){
-        int threads=Runtime.getRuntime().availableProcessors();
+    public void start() {
+        int threads = Runtime.getRuntime().availableProcessors();
 
 
         /**
@@ -50,7 +51,7 @@ public class TransferService {
          * TODO 这个问题需要研究
          */
 
-        executorService= Executors.newFixedThreadPool(1);
+        executorService = Executors.newFixedThreadPool(1);
     }
 
 }

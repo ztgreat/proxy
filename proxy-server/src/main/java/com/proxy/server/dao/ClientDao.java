@@ -16,37 +16,42 @@ import java.util.Map;
  */
 public class ClientDao {
 
-    private static CacheManager<String,ClientNode>cacheManager =new MemoryCacheManager<String,ClientNode>();
+    private static CacheManager<String, ClientNode> cacheManager = new MemoryCacheManager<String, ClientNode>();
 
-    private static Cache<String,ClientNode>keyToNode = cacheManager.getCache("client_cache");
+    private static Cache<String, ClientNode> keyToNode = cacheManager.getCache("client_cache");
 
 
-    public void add(String clientKey, ClientNode node){
-        keyToNode.put(clientKey,node);
+    public void add(String clientKey, ClientNode node) {
+        keyToNode.put(clientKey, node);
     }
-    public String getClientKey(Channel channel){
+
+    public String getClientKey(Channel channel) {
         Attribute<String> attr = channel.attr(CommonConstant.ServerChannelAttributeKey.CLIENT_KEY);
-        return attr==null?null:attr.get();
+        return attr == null ? null : attr.get();
     }
-    public void remove(String clientKey){
+
+    public void remove(String clientKey) {
         keyToNode.remove(clientKey);
     }
 
-    public ClientNode get(String clientKey){
-        return  keyToNode.get(clientKey);
+    public ClientNode get(String clientKey) {
+        return keyToNode.get(clientKey);
     }
-    public void setNodeStatus(String clientKey,Integer status){
-        if (keyToNode.get(clientKey)!=null){
+
+    public void setNodeStatus(String clientKey, Integer status) {
+        if (keyToNode.get(clientKey) != null) {
             keyToNode.get(clientKey).setStatus(status);
         }
     }
-    public void setNodeChannle(String clientKey,Channel channel){
-        if (keyToNode.get(clientKey)!=null){
+
+    public void setNodeChannle(String clientKey, Channel channel) {
+        if (keyToNode.get(clientKey) != null) {
             keyToNode.get(clientKey).setChannel(channel);
         }
 
     }
-    public Map<String,ClientNode> getAll(){
+
+    public Map<String, ClientNode> getAll() {
         return keyToNode.getAll();
     }
 

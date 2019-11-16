@@ -14,7 +14,7 @@ import io.netty.channel.Channel;
 public class TransferMessage implements Runnable {
 
 
-    private  Message message;
+    private Message message;
 
     public TransferMessage(Message message) {
         this.message = message;
@@ -22,33 +22,33 @@ public class TransferMessage implements Runnable {
 
     @Override
     public void run() {
-        Channel channel=null;
+        Channel channel = null;
 
         //1、取出数据
-        if (message==null){
+        if (message == null) {
             return;
         }
 
         //2、该端口的代理客户端
-        channel=message.getClientChannel();
-        if (channel==null){
+        channel = message.getClientChannel();
+        if (channel == null) {
             return;
         }
 
         //3、将数据重新封装 通过代理客户端的channel 发送出去
 
-        ProxyMessage proxyMessage= ProxyMessageUtil.buildMsg(message.getSessionID()
-                ,message.getType()
-                ,message.getProxyType()
-                ,message.getPriority()
-                ,message.getCommand()
-                ,message.getData());
+        ProxyMessage proxyMessage = ProxyMessageUtil.buildMsg(message.getSessionID()
+                , message.getType()
+                , message.getProxyType()
+                , message.getPriority()
+                , message.getCommand()
+                , message.getData());
 
         try {
             channel.writeAndFlush(proxyMessage);
-        }catch (Exception e){
-            LoggerUtils.info(this.getClass(), "转发消息发生异常:"+e.getMessage());
-            if (channel!=null)
+        } catch (Exception e) {
+            LoggerUtils.info(this.getClass(), "转发消息发生异常:" + e.getMessage());
+            if (channel != null)
                 ServerBeanManager.getUserSessionService().get(message.getSessionID()).close();
         }
     }

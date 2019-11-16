@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
 /**
  * 限流 Handler
  * 共享模式的 handler
- * @author  ztgreat
+ *
+ * @author ztgreat
  */
 @ChannelHandler.Sharable
 public class TrafficLimitHandler extends ChannelInboundHandlerAdapter {

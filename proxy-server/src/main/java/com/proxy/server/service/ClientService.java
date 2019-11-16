@@ -18,6 +18,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
 /**
@@ -27,14 +28,14 @@ public class ClientService {
 
     private static Logger logger = LoggerFactory.getLogger(ClientService.class);
 
-    private static ClientDao clientDao =new ClientDao();
+    private static ClientDao clientDao = new ClientDao();
 
-    public void add(String clientKey, ClientNode node){
+    public void add(String clientKey, ClientNode node) {
 
         //1.添加客户端
-        clientDao.add(clientKey,node);
+        clientDao.add(clientKey, node);
 
-        if(node.getStatus()!= CommonConstant.ClientStatus.ONLINE){
+        if (node.getStatus() != CommonConstant.ClientStatus.ONLINE) {
             return;
         }
 
@@ -44,24 +45,24 @@ public class ClientService {
         Map<Object, ProxyRealServer> keyToNode = node.getServerPort2RealServer();
         for (Map.Entry<Object, ProxyRealServer> keyToProxyRealServer : keyToNode.entrySet()) {
 
-            ProxyRealServer proxyRealServer  = keyToProxyRealServer.getValue();
+            ProxyRealServer proxyRealServer = keyToProxyRealServer.getValue();
             /**
              * 如果是HTTP代理,并且设置了通过域名访问,则不需要单独绑定端口
              */
-            if (proxyRealServer.getProxyType().intValue()==CommonConstant.ProxyType.HTTP  && StringUtils.isNotBlank(proxyRealServer.getDomain())){
-                ServerBeanManager.getProxyChannelService().addByServerdomain(proxyRealServer.getDomain(),proxyRealServer);
+            if (proxyRealServer.getProxyType().intValue() == CommonConstant.ProxyType.HTTP && StringUtils.isNotBlank(proxyRealServer.getDomain())) {
+                ServerBeanManager.getProxyChannelService().addByServerdomain(proxyRealServer.getDomain(), proxyRealServer);
                 proxyRealServer.setStatus(CommonConstant.ProxyStatus.ONLINE);
                 continue;
             }
 
-            if(proxyRealServer.getProxyType().intValue()==CommonConstant.ProxyType.HTTP){
+            if (proxyRealServer.getProxyType().intValue() == CommonConstant.ProxyType.HTTP) {
 
                 //http 端口代理绑定
-                HttpProxy(keyToProxyRealServer.getKey(),proxyRealServer);
+                HttpProxy(keyToProxyRealServer.getKey(), proxyRealServer);
 
-            }else if(proxyRealServer.getProxyType().intValue()==CommonConstant.ProxyType.TCP){
+            } else if (proxyRealServer.getProxyType().intValue() == CommonConstant.ProxyType.TCP) {
                 //tcp 端口代理绑定
-                TCPProxy(keyToProxyRealServer.getKey(),proxyRealServer);
+                TCPProxy(keyToProxyRealServer.getKey(), proxyRealServer);
             }
 
         }
@@ -70,18 +71,19 @@ public class ClientService {
 
     /**
      * 绑定tcp 代理
-     * @param key 端口
+     *
+     * @param key             端口
      * @param proxyRealServer
      */
-    private void TCPProxy(Object key,ProxyRealServer proxyRealServer){
+    private void TCPProxy(Object key, ProxyRealServer proxyRealServer) {
 
         NioEventLoopGroup serverWorkerGroup;
         NioEventLoopGroup serverBossGroup;
-        int serverPort=0;
-        if(key instanceof  Integer){
+        int serverPort = 0;
+        if (key instanceof Integer) {
             serverPort = (int) key;
-            if (ServerBeanManager.getProxyChannelService().getServerProxy(serverPort)!=null && ServerBeanManager.getProxyChannelService().getServerProxy(serverPort).getStatus()==CommonConstant.ProxyStatus.ONLINE){
-                logger.error("服务端口 {} 已经被绑定了",key);
+            if (ServerBeanManager.getProxyChannelService().getServerProxy(serverPort) != null && ServerBeanManager.getProxyChannelService().getServerProxy(serverPort).getStatus() == CommonConstant.ProxyStatus.ONLINE) {
+                logger.error("服务端口 {} 已经被绑定了", key);
             }
             serverBossGroup = new NioEventLoopGroup();
             serverWorkerGroup = new NioEventLoopGroup();
@@ -98,28 +100,29 @@ public class ClientService {
                     });
             try {
                 //绑定服务端口,会更新代理状态
-                ServerBeanManager.getProxyChannelService().bindForTCP(serverPort, bootstrap,proxyRealServer);
+                ServerBeanManager.getProxyChannelService().bindForTCP(serverPort, bootstrap, proxyRealServer);
             } catch (Exception e) {
-                logger.error("服务端口 {} 绑定失败:"+e.getMessage(),key);
+                logger.error("服务端口 {} 绑定失败:" + e.getMessage(), key);
             }
         }
     }
 
     /**
      * 绑定http代理
-     * @param key 端口
+     *
+     * @param key             端口
      * @param proxyRealServer
      */
-    private void HttpProxy(Object key,ProxyRealServer proxyRealServer){
+    private void HttpProxy(Object key, ProxyRealServer proxyRealServer) {
 
         NioEventLoopGroup serverWorkerGroup;
         NioEventLoopGroup serverBossGroup;
 
-        int serverPort=0;
-        if(key instanceof  Integer){
+        int serverPort = 0;
+        if (key instanceof Integer) {
             serverPort = (int) key;
-            if (ServerBeanManager.getProxyChannelService().getServerProxy(serverPort)!=null && ServerBeanManager.getProxyChannelService().getServerProxy(serverPort).getStatus()==CommonConstant.ProxyStatus.ONLINE){
-                logger.error("服务端口 {} 已经被绑定了",key);
+            if (ServerBeanManager.getProxyChannelService().getServerProxy(serverPort) != null && ServerBeanManager.getProxyChannelService().getServerProxy(serverPort).getStatus() == CommonConstant.ProxyStatus.ONLINE) {
+                logger.error("服务端口 {} 已经被绑定了", key);
             }
             serverBossGroup = new NioEventLoopGroup();
             serverWorkerGroup = new NioEventLoopGroup();
@@ -131,45 +134,49 @@ public class ClientService {
                             ch.pipeline().addLast(SharableHandlerManager.getTrafficLimitHandler());
                             ch.pipeline().addLast(SharableHandlerManager.getTrafficCollectionHandler());
                             //HttpRequestDecoder http请求消息解码器
-                            ch.pipeline().addLast("httpDecoder",new HttpRequestDecoder());
-                            ch.pipeline().addLast("connectHandler",new HttpNoticeChannelHandler());
+                            ch.pipeline().addLast("httpDecoder", new HttpRequestDecoder());
+                            ch.pipeline().addLast("connectHandler", new HttpNoticeChannelHandler());
                             //解析 HTTP POST 请求
-                            ch.pipeline().addLast("httpObject",new HttpObjectAggregator(2*1024*1024));
-                            ch.pipeline().addLast("transferHandler",new HttpChannelHandler());
+                            ch.pipeline().addLast("httpObject", new HttpObjectAggregator(2 * 1024 * 1024));
+                            ch.pipeline().addLast("transferHandler", new HttpChannelHandler());
 
                         }
                     });
             try {
                 //绑定服务端口,会更新代理状态
-                ServerBeanManager.getProxyChannelService().bindForTCP(serverPort, bootstrap,proxyRealServer);
+                ServerBeanManager.getProxyChannelService().bindForTCP(serverPort, bootstrap, proxyRealServer);
             } catch (Exception e) {
-                logger.error("服务端口 {} 绑定失败:"+e.getMessage(),key);
+                logger.error("服务端口 {} 绑定失败:" + e.getMessage(), key);
             }
         }
 
     }
 
 
-    public String getClientKey(Channel channel){
+    public String getClientKey(Channel channel) {
         return clientDao.getClientKey(channel);
     }
-    public void delete(String clientKey){
-        if (clientKey!=null)
+
+    public void delete(String clientKey) {
+        if (clientKey != null)
             clientDao.remove(clientKey);
     }
-    public void setNodeStatus(String clientKey,Integer status){
-        clientDao.setNodeStatus(clientKey,status);
-    }
-    public ClientNode get(String clientKey){
-        if (clientKey!=null)
-            return  clientDao.get(clientKey);
-        return null;
-    }
-    public void setNodeChannle(String clientKey,Channel channel){
-        clientDao.setNodeChannle(clientKey,channel);
+
+    public void setNodeStatus(String clientKey, Integer status) {
+        clientDao.setNodeStatus(clientKey, status);
     }
 
-    public Map<String, ClientNode> getAllNode(){
+    public ClientNode get(String clientKey) {
+        if (clientKey != null)
+            return clientDao.get(clientKey);
+        return null;
+    }
+
+    public void setNodeChannle(String clientKey, Channel channel) {
+        clientDao.setNodeChannle(clientKey, channel);
+    }
+
+    public Map<String, ClientNode> getAllNode() {
         return clientDao.getAll();
     }
 

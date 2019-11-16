@@ -9,7 +9,8 @@ import java.util.List;
 
 /**
  * 用于对Http请求的解码,暂时不需要
- * @author  ztgreat
+ *
+ * @author ztgreat
  */
 public class MyHttpResponseDecoder extends HttpResponseDecoder {
 

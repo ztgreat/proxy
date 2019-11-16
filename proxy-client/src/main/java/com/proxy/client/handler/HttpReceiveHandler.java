@@ -19,6 +19,7 @@ import java.util.List;
 
 /**
  * 处理用户请求的handler
+ *
  * @author ztgreat
  */
 public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
@@ -27,13 +28,14 @@ public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 用于http 消息编码处理
+     *
      * @// TODO: 2018/2/10 需要review
      */
     private MyHttpRequestEncoder httpRequestEncoder;
 
-    public HttpReceiveHandler(){
+    public HttpReceiveHandler() {
         super();
-        httpRequestEncoder =new MyHttpRequestEncoder();
+        httpRequestEncoder = new MyHttpRequestEncoder();
     }
 
 
@@ -41,12 +43,12 @@ public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         //http 请求
-        if (msg instanceof FullHttpRequest){
+        if (msg instanceof FullHttpRequest) {
             FullHttpRequest request = (FullHttpRequest) msg;
             //处理http消息
-            httpHandler(ctx,request);
+            httpHandler(ctx, request);
 
-        }else {
+        } else {
             ReferenceCountUtil.release(msg);
             logger.error("不支持的http消息:丢弃消息");
         }
@@ -55,38 +57,37 @@ public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 处理http 请求
+     *
      * @param ctx
      * @param request
      * @throws Exception
      */
-    public  void httpHandler(ChannelHandlerContext ctx,FullHttpRequest request) throws  Exception{
+    public void httpHandler(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
 
 
-
-
-        String id=request.headers().get(CommonConstant.SESSION_NAME);
-        Long sessionID =Long.valueOf(id);
-        if (sessionID==null){
+        String id = request.headers().get(CommonConstant.SESSION_NAME);
+        Long sessionID = Long.valueOf(id);
+        if (sessionID == null) {
             logger.debug("无法获取sessionId,丢弃消息");
             ReferenceCountUtil.release(request);
             return;
         }
-        RealServer realServer=ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
-        Channel realServerChannel= null;
+        RealServer realServer = ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
+        Channel realServerChannel = null;
 
-        if(realServer ==null || (realServerChannel=realServer.getChannel())==null){
+        if (realServer == null || (realServerChannel = realServer.getChannel()) == null) {
             logger.debug("无法获取真实服务器连接,丢弃消息");
             ReferenceCountUtil.release(request);
             return;
         }
 
 
-        InetSocketAddress sa = (InetSocketAddress)realServerChannel.remoteAddress();
-        String host=sa.getHostString();
+        InetSocketAddress sa = (InetSocketAddress) realServerChannel.remoteAddress();
+        String host = sa.getHostString();
 
-        int port=sa.getPort();
+        int port = sa.getPort();
 
-        request.headers().set(HttpHeaderNames.HOST,host+":"+port);
+        request.headers().set(HttpHeaderNames.HOST, host + ":" + port);
 
         /**
          * 使用http 1.1,并设置keep-alive
@@ -96,11 +97,11 @@ public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
         request.setProtocolVersion(HttpVersion.HTTP_1_1);
         request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
-        List<Object>list=new ArrayList<>();
-        httpRequestEncoder.encode(ctx,request,list);
-        for (Object o:list){
+        List<Object> list = new ArrayList<>();
+        httpRequestEncoder.encode(ctx, request, list);
+        for (Object o : list) {
             realServerChannel.writeAndFlush(o);
-            logger.debug("转发http请求至真实服务器:{}:{}",request.method().name(),request.uri());
+            logger.debug("转发http请求至真实服务器:{}:{}", request.method().name(), request.uri());
         }
 
 

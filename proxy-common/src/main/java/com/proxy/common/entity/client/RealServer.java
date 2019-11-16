@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 
 /**
  * 代理客户端和真实服务器的映射
+ *
  * @author ztgreat
  */
 public class RealServer {
@@ -16,7 +17,7 @@ public class RealServer {
     /**
      * 真实服务器端口
      */
-    private  Integer realHostPort;
+    private Integer realHostPort;
 
     /**
      * 服务器 服务端口,通过端口转发的时候启用
@@ -31,7 +32,7 @@ public class RealServer {
     /**
      * 代理类型
      */
-    private  Integer proxyType;
+    private Integer proxyType;
 
     /**
      * 真实服务器地址
@@ -91,8 +92,8 @@ public class RealServer {
         this.realHost = realHost;
     }
 
-    public  String getAddress(){
-        if (realHost ==null || realHostPort ==null){
+    public String getAddress() {
+        if (realHost == null || realHostPort == null) {
             return null;
         }
         return new StringBuilder(realHost).append(":").append(realHostPort).toString();

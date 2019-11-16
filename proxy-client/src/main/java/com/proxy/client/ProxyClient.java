@@ -33,12 +33,12 @@ public class ProxyClient {
     /**
      * 服务器端口,默认6666
      */
-    private  int port;
+    private int port;
 
     /**
      * 5M
      */
-    private int maxContentLength = 5*1024 * 1024;
+    private int maxContentLength = 5 * 1024 * 1024;
 
 
     /**
@@ -65,9 +65,9 @@ public class ProxyClient {
     private NioEventLoopGroup realServerGroup;
 
 
-    public ProxyClient(){
-        this.host="127.0.0.1";
-        this.port=6666;
+    public ProxyClient() {
+        this.host = "127.0.0.1";
+        this.port = 6666;
         clientBootstrap = new Bootstrap();
         clientGroup = new NioEventLoopGroup();
     }
@@ -95,8 +95,8 @@ public class ProxyClient {
                     public void initChannel(SocketChannel ch)
                             throws Exception {
                         //ch.pipeline().addLast("logs", new LoggingHandler(LogLevel.DEBUG));
-                        ch.pipeline().addLast("idleStateHandler", new IdleStateHandler(10*3, 15*3, 20*3));
-                        ch.pipeline().addLast(new ProxyMessageDecoder(2*1024*1024,0,4));
+                        ch.pipeline().addLast("idleStateHandler", new IdleStateHandler(10 * 3, 15 * 3, 20 * 3));
+                        ch.pipeline().addLast(new ProxyMessageDecoder(2 * 1024 * 1024, 0, 4));
                         ch.pipeline().addLast(new ProxyMessageEncoder());
                         ch.pipeline().addLast(new LoginAuthReqHandler());
                         ch.pipeline().addLast(new HeartBeatReqHandler());
@@ -114,7 +114,7 @@ public class ProxyClient {
 
         try {
             clear();
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -123,7 +123,7 @@ public class ProxyClient {
     /**
      * 初始化 连接后端真正服务器
      */
-    public  void initRealServerBoot(){
+    public void initRealServerBoot() {
 
         //初始化
         realServerBootstrap = new Bootstrap();
@@ -145,14 +145,14 @@ public class ProxyClient {
 
     public void doConnect(int retry) throws InterruptedException {
 
-        if (retry ==0)
+        if (retry == 0)
             return;
         ChannelFuture future = clientBootstrap.connect(host, port);
         future.addListener(new ChannelFutureListener() {
             public void operationComplete(ChannelFuture futureListener) throws Exception {
                 if (futureListener.isSuccess()) {
                     Channel channel = futureListener.channel();
-                    logger.info("连接服务器({})成功",host);
+                    logger.info("连接服务器({})成功", host);
 
                     channel.closeFuture().addListeners(new ChannelFutureListener() {
                         @Override
@@ -164,16 +164,16 @@ public class ProxyClient {
                     });
 
                 } else {
-                    logger.info("连接服务器({}) 失败,10s后尝试重连",host);
+                    logger.info("连接服务器({}) 失败,10s后尝试重连", host);
                 }
             }
         });
         future.channel().closeFuture().sync();
         Thread.sleep(10000);
-        doConnect(retry-1);
+        doConnect(retry - 1);
     }
 
-    public  void clear(){
+    public void clear() {
         ClientBeanManager.getProxyService().clear();
         clientGroup.shutdownGracefully();
         realServerGroup.shutdownGracefully();
@@ -183,9 +183,9 @@ public class ProxyClient {
 
         //加载日志
         LogBackConfigLoader.load();
-        String host= ClientBeanManager.getConfigService().readConfig().get("server.host");
-        String port= ClientBeanManager.getConfigService().readConfig().get("server.port");
-        new ProxyClient(host,Integer.valueOf(port)).start();
+        String host = ClientBeanManager.getConfigService().readConfig().get("server.host");
+        String port = ClientBeanManager.getConfigService().readConfig().get("server.port");
+        new ProxyClient(host, Integer.valueOf(port)).start();
     }
 
 }

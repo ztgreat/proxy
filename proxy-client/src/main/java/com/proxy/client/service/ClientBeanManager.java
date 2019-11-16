@@ -6,9 +6,10 @@ package com.proxy.client.service;
  */
 public class ClientBeanManager {
 
-    private static  ConfigService configService=new ConfigService();
+    private static ConfigService configService = new ConfigService();
 
-    private static ProxyService proxyService=new ProxyService();
+    private static ProxyService proxyService = new ProxyService();
+
     public static ConfigService getConfigService() {
         return configService;
     }

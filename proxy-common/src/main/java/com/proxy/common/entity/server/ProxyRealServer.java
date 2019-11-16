@@ -2,6 +2,7 @@ package com.proxy.common.entity.server;
 
 /**
  * 代理客户端和真实服务器的映射
+ *
  * @author ztgreat
  */
 public class ProxyRealServer {
@@ -14,7 +15,7 @@ public class ProxyRealServer {
     /**
      * 真实服务器端口
      */
-    private  Integer realHostPort;
+    private Integer realHostPort;
 
     /**
      * 服务器 服务端口,通过端口转发的时候启用
@@ -29,7 +30,7 @@ public class ProxyRealServer {
     /**
      * 代理类型
      */
-    private  Integer proxyType;
+    private Integer proxyType;
 
     /**
      * 真实服务器地址
@@ -47,7 +48,6 @@ public class ProxyRealServer {
      * default : 默认值,代理服务器地址
      * random  : 表示随机设定值
      * ip地址   : 指定值
-     *
      */
     private String forward;
     /**
@@ -99,8 +99,8 @@ public class ProxyRealServer {
         this.realHost = realHost;
     }
 
-    public  String getAddress(){
-        if (realHost ==null || realHostPort ==null){
+    public String getAddress() {
+        if (realHost == null || realHostPort == null) {
             return null;
         }
         return new StringBuilder(realHost).append(":").append(realHostPort).toString();

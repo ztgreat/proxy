@@ -8,13 +8,14 @@ import java.util.*;
 
 public class ConfigDao {
 
-    private  static  Map<String,String >config;
-    public Map<String,String> readConfig() throws  Exception{
-        if (config!=null){
+    private static Map<String, String> config;
+
+    public Map<String, String> readConfig() throws Exception {
+        if (config != null) {
             return config;
         }
-        InputStream in=this.getClass().getClassLoader().getResourceAsStream("client.properties");
-        if(in ==null){
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream("client.properties");
+        if (in == null) {
             String filePath = "../conf/client.properties";
             in = new BufferedInputStream(new FileInputStream(filePath));
         }
@@ -22,10 +23,10 @@ public class ConfigDao {
         prop.load(in);
 
         Set keys = prop.keySet();
-        config= new HashMap<>();
-        for (Iterator<String> it = keys.iterator(); it.hasNext();){
+        config = new HashMap<>();
+        for (Iterator<String> it = keys.iterator(); it.hasNext(); ) {
             String key = it.next();
-            config.put(key,prop.getProperty(key));
+            config.put(key, prop.getProperty(key));
         }
         return config;
     }

@@ -7,14 +7,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 内存缓存
+ *
  * @author ztgreat
  */
-public class MemoryCache<K, V> implements Cache<K,V> {
+public class MemoryCache<K, V> implements Cache<K, V> {
 
     /**
      * 使用ConcurrentHashMap 作为内存缓存容器
      */
-    private Map<K,V>cache;
+    private Map<K, V> cache;
 
     /**
      * 缓存名称
@@ -22,7 +23,7 @@ public class MemoryCache<K, V> implements Cache<K,V> {
     private String name;
 
     public MemoryCache(String name) {
-        this.cache = new ConcurrentHashMap<K,V>();
+        this.cache = new ConcurrentHashMap<K, V>();
     }
 
     @Override
@@ -32,7 +33,7 @@ public class MemoryCache<K, V> implements Cache<K,V> {
 
     @Override
     public V put(K key, V value) throws RuntimeException {
-        return cache.put(key,value);
+        return cache.put(key, value);
     }
 
     @Override

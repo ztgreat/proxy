@@ -8,6 +8,7 @@ public interface Cache<K, V> {
 
     /**
      * 获取缓存数据
+     *
      * @param key
      * @return
      */
@@ -15,6 +16,7 @@ public interface Cache<K, V> {
 
     /**
      * 保存缓存数据
+     *
      * @param key
      * @param v
      */
@@ -22,6 +24,7 @@ public interface Cache<K, V> {
 
     /**
      * 移除某个缓存数据
+     *
      * @param key
      */
     void remove(K key);

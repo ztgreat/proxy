@@ -11,9 +11,9 @@ import java.util.List;
 /**
  * http 消息解码器
  */
-public class MyHttpRequestDecoder extends HttpRequestDecoder{
+public class MyHttpRequestDecoder extends HttpRequestDecoder {
 
-//    private  Long sessionId;
+    //    private  Long sessionId;
     @Override
     public void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
         super.decode(ctx, buffer, out);

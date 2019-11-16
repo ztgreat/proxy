@@ -19,18 +19,20 @@ import java.net.InetSocketAddress;
 
 /**
  * 处理用户请求的handler
+ *
  * @author ztgreat
  */
 public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(TCPChannelHandler.class);
 
-    public TCPChannelHandler(){
+    public TCPChannelHandler() {
         super();
     }
 
     /**
      * 为用户连接产生ID
+     *
      * @return
      */
     private static Long getSessionID() {
@@ -47,26 +49,26 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
 
         //如果不存在key,那么不存在该代理客户端，后续理应不再判断，暂时为了避免考虑不全，先判断多次
         if (proxyChannel == null) {
-            logger.error("端口{} 没有代理客户端",sa.getPort());
+            logger.error("端口{} 没有代理客户端", sa.getPort());
             ctx.channel().close();
             return;
         }
         ClientNode node = ServerBeanManager.getClientService().get(proxyChannel.getClientKey());
-        if (node==null || node.getChannel()==null || node.getStatus()!= CommonConstant.ClientStatus.ONLINE){
-            logger.error("端口{} 没有代理客户端",sa.getPort());
+        if (node == null || node.getChannel() == null || node.getStatus() != CommonConstant.ClientStatus.ONLINE) {
+            logger.error("端口{} 没有代理客户端", sa.getPort());
             ctx.channel().close();
             return;
         }
-        long sessionID=getSessionID();
-        int sPort=sa.getPort();
+        long sessionID = getSessionID();
+        int sPort = sa.getPort();
 
         sa = (InetSocketAddress) userChannel.remoteAddress();
-        String ip=sa.getAddress().getHostAddress();
-        int uPort=sa.getPort();
+        String ip = sa.getAddress().getHostAddress();
+        int uPort = sa.getPort();
 
         //将sessionID，用户ip,port，服务器port，封装到消息中
 
-        Message message=new Message();
+        Message message = new Message();
         message.setIp(ip);
         message.setClientChannel(node.getChannel());
 
@@ -74,25 +76,25 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         message.setsPort(sPort);
         message.setSessionID(sessionID);
         message.setType(CommonConstant.MessageType.TYPE_CONNECT_REALSERVER);
-        ProxyRealServer realServer=node.getServerPort2RealServer().get(sPort);
-        if (realServer==null){
-            logger.error("端口{} 没有开启映射",sPort);
+        ProxyRealServer realServer = node.getServerPort2RealServer().get(sPort);
+        if (realServer == null) {
+            logger.error("端口{} 没有开启映射", sPort);
             ctx.channel().close();
             return;
         }
-        String address=realServer.getAddress();
+        String address = realServer.getAddress();
         message.setRemoteAddress(address);
         message.setData(address.getBytes());
         message.setProxyType(realServer.getProxyType().byteValue());
-        message.setCommand((ServerBeanManager.getConfigService().getConfigure("server")+":"+realServer.getServerPort()).getBytes());
+        message.setCommand((ServerBeanManager.getConfigService().getConfigure("server") + ":" + realServer.getServerPort()).getBytes());
 
 
         //将通道保存 调用UserService(会保存代理类型 type)
-        ServerBeanManager.getUserSessionService().add(sessionID,ctx.channel(),realServer);
+        ServerBeanManager.getUserSessionService().add(sessionID, ctx.channel(), realServer);
 
         //调用ServerService 将消息 放入队列
         ServerBeanManager.getTransferService().toClient(message);
-        logger.debug("通知客户端({})与真实服务器{}建立连接 ",node.getClientKey(),address);
+        logger.debug("通知客户端({})与真实服务器{}建立连接 ", node.getClientKey(), address);
 
         ctx.channel().config().setAutoRead(false);
         logger.debug("用户请求访问通道设置为不可读");
@@ -103,18 +105,18 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         //代理类型
-        Integer type= ServerBeanManager.getUserSessionService().getType(ctx.channel());
-        if (type!=null){
-            if(type.intValue()== CommonConstant.ProxyType.TCP){
+        Integer type = ServerBeanManager.getUserSessionService().getType(ctx.channel());
+        if (type != null) {
+            if (type.intValue() == CommonConstant.ProxyType.TCP) {
                 //tcp 类型
                 logger.debug("tcp代理");
                 tcpHandler(ctx, (ByteBuf) msg, CommonConstant.ProxyType.TCP);
-            }else {
+            } else {
                 ReferenceCountUtil.release(msg);
                 logger.debug("非tcp代理:丢弃消息");
             }
 
-        }else {
+        } else {
             ReferenceCountUtil.release(msg);
             logger.debug("消息格式错误:丢弃消息");
         }
@@ -125,9 +127,9 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 
         logger.debug("用户连接失效");
-        Long sessionID= ServerBeanManager.getUserSessionService().getSessionID(ctx.channel());
+        Long sessionID = ServerBeanManager.getUserSessionService().getSessionID(ctx.channel());
 
-        if (sessionID==null){
+        if (sessionID == null) {
             return;
         }
 
@@ -142,19 +144,19 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
             return;
         }
         ClientNode node = ServerBeanManager.getClientService().get(proxyChannel.getClientKey());
-        if (node==null || node.getChannel()==null || node.getStatus()!= CommonConstant.ClientStatus.ONLINE){
+        if (node == null || node.getChannel() == null || node.getStatus() != CommonConstant.ClientStatus.ONLINE) {
             return;
         }
 
-        int sPort=sa.getPort();
+        int sPort = sa.getPort();
 
         sa = (InetSocketAddress) userChannel.remoteAddress();
-        String ip=sa.getAddress().getHostAddress();
-        int uPort=sa.getPort();
+        String ip = sa.getAddress().getHostAddress();
+        int uPort = sa.getPort();
 
         //将sessionID，用户ip,port，服务器port，封装到消息中
 
-        Message message=new Message();
+        Message message = new Message();
         message.setIp(ip);
         message.setClientChannel(node.getChannel());
 
@@ -162,11 +164,11 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         message.setsPort(sPort);
         message.setSessionID(sessionID);
         message.setType(CommonConstant.MessageType.TYPE_DISCONNECT);
-        ProxyRealServer realServer=node.getServerPort2RealServer().get(sPort);
-        if (realServer==null){
+        ProxyRealServer realServer = node.getServerPort2RealServer().get(sPort);
+        if (realServer == null) {
             return;
         }
-        String address=realServer.getAddress();
+        String address = realServer.getAddress();
         message.setRemoteAddress(address);
         message.setData(address.getBytes());
 
@@ -174,9 +176,8 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         ServerBeanManager.getUserSessionService().remove(sessionID);
         //调用ServerService 将消息 放入队列
         ServerBeanManager.getTransferService().toClient(message);
-        logger.debug("通知客户端({})与真实服务器{}断开连接 ",node.getClientKey(),address);
+        logger.debug("通知客户端({})与真实服务器{}断开连接 ", node.getClientKey(), address);
         closeChannle(ctx);
-
 
 
     }
@@ -189,45 +190,46 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 处理tcp 请求
+     *
      * @param ctx
      * @param buf
      * @throws Exception
      */
-    public  void tcpHandler(ChannelHandlerContext ctx,ByteBuf buf,Integer proxyType) throws  Exception{
+    public void tcpHandler(ChannelHandlerContext ctx, ByteBuf buf, Integer proxyType) throws Exception {
 
 
-        Channel userChannel=ctx.channel();
+        Channel userChannel = ctx.channel();
 
         InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
 
-        ProxyChannel proxyChannel= ServerBeanManager.getProxyChannelService().getServerProxy(sa.getPort());
+        ProxyChannel proxyChannel = ServerBeanManager.getProxyChannelService().getServerProxy(sa.getPort());
 
         if (proxyChannel == null) {
 
             // 该端口还没有代理客户端
-            logger.error("端口{} 没有代理客户端",sa.getPort());
+            logger.error("端口{} 没有代理客户端", sa.getPort());
             userChannel.close();
             ReferenceCountUtil.release(buf);
             return;
         }
         ClientNode node = ServerBeanManager.getClientService().get(proxyChannel.getClientKey());
-        if (node==null || node.getChannel()==null || node.getStatus()!= CommonConstant.ClientStatus.ONLINE){
-            logger.error("端口{} 没有代理客户端",sa.getPort());
+        if (node == null || node.getChannel() == null || node.getStatus() != CommonConstant.ClientStatus.ONLINE) {
+            logger.error("端口{} 没有代理客户端", sa.getPort());
             userChannel.close();
             ReferenceCountUtil.release(buf);
             return;
         }
 
         //封装消息
-        Long sessionID= ServerBeanManager.getUserSessionService().getSessionID(userChannel);
+        Long sessionID = ServerBeanManager.getUserSessionService().getSessionID(userChannel);
 
-        ProxyRealServer realServer=node.getServerPort2RealServer().get(sa.getPort());
+        ProxyRealServer realServer = node.getServerPort2RealServer().get(sa.getPort());
 
-        byte[] data=new byte[buf.readableBytes()];
+        byte[] data = new byte[buf.readableBytes()];
         buf.readBytes(data);
         buf.release();
 
-        Message message=new Message();
+        Message message = new Message();
         message.setClientChannel(node.getChannel());
         message.setData(data);
         message.setsPort(sa.getPort());
@@ -235,20 +237,21 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         message.setType(CommonConstant.MessageType.TYPE_TRANSFER);
         message.setProxyType(proxyType.byteValue());
 
-        logger.debug("来自{}端口的请求转发至客户端({})",sa.getPort(),node.getClientKey());
+        logger.debug("来自{}端口的请求转发至客户端({})", sa.getPort(), node.getClientKey());
 
         ServerBeanManager.getTransferService().toClient(message);
     }
 
     /**
      * 关闭用户连接
+     *
      * @param ctx
      */
-    public void   closeChannle(ChannelHandlerContext ctx){
+    public void closeChannle(ChannelHandlerContext ctx) {
 
-        Channel channel=ctx.channel();
+        Channel channel = ctx.channel();
 
-        if (channel!=null && channel.isActive()){
+        if (channel != null && channel.isActive()) {
             channel.close();
         }
     }

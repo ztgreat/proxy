@@ -19,8 +19,8 @@ public class LoginAuthReqHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         logger.debug("客户端发送登录信息");
-        String clientKey= ClientBeanManager.getConfigService().readConfig().get("key");
-        ctx.writeAndFlush(ProxyMessageUtil.buildLoginReq(null,clientKey.getBytes()));
+        String clientKey = ClientBeanManager.getConfigService().readConfig().get("key");
+        ctx.writeAndFlush(ProxyMessageUtil.buildLoginReq(null, clientKey.getBytes()));
     }
 
     @Override
@@ -31,15 +31,15 @@ public class LoginAuthReqHandler extends ChannelInboundHandlerAdapter {
         byte type = message.getType();
 
         if (type == CommonConstant.Login.TYPE_LOGIN_RESP) {
-            byte command=message.getCommand()[0];
-            String loginMesg=new String(message.getData());
+            byte command = message.getCommand()[0];
+            String loginMesg = new String(message.getData());
 
-            if (command== CommonConstant.Login.LOGIN_SUCCESS){
+            if (command == CommonConstant.Login.LOGIN_SUCCESS) {
                 logger.info("客户端认证登录成功");
                 // 记录客户端和代理服务器的channel
                 ClientBeanManager.getProxyService().setChannel(ctx.channel());
-            }else if(command== CommonConstant.Login.LOGIN_FAIL){
-                logger.info("客户端认证登录失败:{}",loginMesg);
+            } else if (command == CommonConstant.Login.LOGIN_FAIL) {
+                logger.info("客户端认证登录失败:{}", loginMesg);
                 ctx.channel().close();
             }
         } else {

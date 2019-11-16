@@ -9,7 +9,8 @@ import java.util.List;
 
 /**
  * 用于对Http响应的编码
- * @author  ztgreat
+ *
+ * @author ztgreat
  */
 public class MyHttpResponseEncoder extends HttpResponseEncoder {
 

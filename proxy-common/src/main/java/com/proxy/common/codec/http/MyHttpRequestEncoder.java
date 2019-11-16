@@ -8,7 +8,8 @@ import java.util.List;
 
 /**
  * 用于对Http请求的编码
- * @author  ztgreat
+ *
+ * @author ztgreat
  */
 public class MyHttpRequestEncoder extends HttpRequestEncoder {
 

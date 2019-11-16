@@ -13,21 +13,22 @@ import java.util.Map;
 
 /**
  * 代理服务器配置文件读取
+ *
  * @author ztgreat
  */
 public class ConfigService {
 
     private static Logger logger = LoggerFactory.getLogger(ConfigService.class);
 
-    private static Map<String, Object> config=null;
+    private static Map<String, Object> config = null;
 
-    public Map<String, Object> readServerConfig(){
+    public Map<String, Object> readServerConfig() {
 
         Map<String, Object> loaded = null;
         try {
 
-            InputStream in=this.getClass().getClassLoader().getResourceAsStream("proxy.yaml");
-            if(in ==null){
+            InputStream in = this.getClass().getClassLoader().getResourceAsStream("proxy.yaml");
+            if (in == null) {
                 String filePath = "../conf/proxy.yaml";
                 in = new BufferedInputStream(new FileInputStream(filePath));
             }
@@ -36,10 +37,11 @@ public class ConfigService {
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         }
-        return config=loaded;
+        return config = loaded;
     }
-    public synchronized Object getConfigure(String key){
-        if (config==null)
+
+    public synchronized Object getConfigure(String key) {
+        if (config == null)
             readServerConfig();
         return config.get(key);
     }

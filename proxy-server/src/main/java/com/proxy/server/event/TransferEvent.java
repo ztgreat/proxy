@@ -6,7 +6,7 @@ package com.proxy.server.event;
  */
 public class TransferEvent {
 
-   private boolean transfer;
+    private boolean transfer;
 
     public TransferEvent() {
         this.transfer = true;

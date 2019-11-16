@@ -11,7 +11,7 @@ public class ProxyMessage {
     /**
      * crc 校验
      */
-    Integer crcCode ;
+    Integer crcCode;
 
     /**
      * 回话id
@@ -21,10 +21,11 @@ public class ProxyMessage {
     /**
      * 类型
      */
-    Byte type ;
+    Byte type;
 
     /**
      * 代理类型
+     *
      * @see CommonConstant.ProxyType
      */
     Byte proxyType;
@@ -102,9 +103,9 @@ public class ProxyMessage {
 
 
     public static final class Builder {
-        Integer crcCode ;
+        Integer crcCode;
         Long sessionID;
-        Byte type ;
+        Byte type;
         Byte proxyType;
         Byte priority;
         byte[] command;

@@ -18,6 +18,7 @@ public class LogBackConfigLoader {
 
     /**
      * 加载外部的logback配置文件
+     *
      * @throws IOException
      * @throws JoranException
      */
@@ -25,12 +26,12 @@ public class LogBackConfigLoader {
 
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-        InputStream in=LogBackConfigLoader.class.getClassLoader().getResourceAsStream("logback.xml");
-        if(in ==null){
+        InputStream in = LogBackConfigLoader.class.getClassLoader().getResourceAsStream("logback.xml");
+        if (in == null) {
             String filePath = "../conf/logback.xml";
             in = new BufferedInputStream(new FileInputStream(filePath));
         }
-        if (in==null) {
+        if (in == null) {
             throw new IOException("Logback External Config File Parameter does not reference a file that exists");
         } else {
             JoranConfigurator configurator = new JoranConfigurator();

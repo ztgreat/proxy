@@ -12,16 +12,16 @@ public class ProxyUtil {
     static String PATTERN_IP = "(\\d*\\.){3}\\d*";
     static Pattern ipPattern = Pattern.compile(PATTERN_IP);
 
-    public static  Object getKey(String domain, Channel userChannel) {
+    public static Object getKey(String domain, Channel userChannel) {
 
         Matcher matcher = ipPattern.matcher(domain);
         if (matcher.find() || domain.startsWith("localhost")) {
             // 通过ip 访问,则返回端口
             InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
-            return  sa.getPort();
+            return sa.getPort();
         }
-        String [] all=domain.split(":");
-        if (all!=null){
+        String[] all = domain.split(":");
+        if (all != null) {
             domain = all[0];
             return domain;
         }
@@ -31,10 +31,11 @@ public class ProxyUtil {
 
     /**
      * 判断是否是ip地址
+     *
      * @param ip
      * @return
      */
-    public static boolean isIpAddr(String ip){
+    public static boolean isIpAddr(String ip) {
         Matcher matcher = ipPattern.matcher(ip);
         return matcher.find();
     }

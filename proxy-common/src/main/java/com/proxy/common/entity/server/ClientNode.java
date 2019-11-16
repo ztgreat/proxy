@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 客户端节点
+ *
  * @author ztgreat
  */
 public class ClientNode {
@@ -16,7 +17,7 @@ public class ClientNode {
     /**
      * 节点名称
      */
-    private  String name;
+    private String name;
 
     /**
      * 客户端key
@@ -53,10 +54,10 @@ public class ClientNode {
     /**
      * 节点映射关系 ,服务器域名/服务器端口--ProxyRealServer
      */
-    private Map<Object,ProxyRealServer> serverPort2RealServer;
+    private Map<Object, ProxyRealServer> serverPort2RealServer;
 
-    public ClientNode(){
-        serverPort2RealServer =new ConcurrentHashMap<Object, ProxyRealServer>();
+    public ClientNode() {
+        serverPort2RealServer = new ConcurrentHashMap<Object, ProxyRealServer>();
     }
 
 
@@ -112,14 +113,14 @@ public class ClientNode {
         this.channel = channel;
     }
 
-    public void addRealServer(Object saveKey, ProxyRealServer nodeMapping){
-        if (saveKey!=null){
-            this.serverPort2RealServer.put(saveKey,nodeMapping);
+    public void addRealServer(Object saveKey, ProxyRealServer nodeMapping) {
+        if (saveKey != null) {
+            this.serverPort2RealServer.put(saveKey, nodeMapping);
         }
     }
 
     public void removeNodeMappings(Integer proxyPort) {
-        if (this.serverPort2RealServer.containsKey(proxyPort)){
+        if (this.serverPort2RealServer.containsKey(proxyPort)) {
             this.serverPort2RealServer.remove(proxyPort);
         }
     }
