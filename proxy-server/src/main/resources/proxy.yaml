@@ -5,7 +5,7 @@ client:
         # clientKey
         ztgreat:
                 - domain: http.proxy.test.com
-                  proxyType: tcp
+                  proxyType: http
                   realhost: 127.0.0.1
                   realhostport: 8000
                   description: http代理
