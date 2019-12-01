@@ -3,16 +3,20 @@ package com.proxy.server.task;
 
 import com.proxy.common.protobuf.ProxyMessage;
 import com.proxy.common.protocol.Message;
-import com.proxy.common.util.LoggerUtils;
 import com.proxy.common.util.ProxyMessageUtil;
 import com.proxy.server.service.ServerBeanManager;
 import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * 转发消息
  */
 public class TransferMessage implements Runnable {
 
+    private static Logger logger = LoggerFactory.getLogger(TransferMessage.class);
 
     private Message message;
 
@@ -22,21 +26,16 @@ public class TransferMessage implements Runnable {
 
     @Override
     public void run() {
-        Channel channel = null;
-
-        //1、取出数据
-        if (message == null) {
-            return;
-        }
+        Channel channel;
 
         //2、该端口的代理客户端
         channel = message.getClientChannel();
-        if (channel == null) {
+        if (Objects.isNull(channel)) {
+            logger.error("[转发消息]端口的代理客户端channel 为null");
             return;
         }
 
         //3、将数据重新封装 通过代理客户端的channel 发送出去
-
         ProxyMessage proxyMessage = ProxyMessageUtil.buildMsg(message.getSessionID()
                 , message.getType()
                 , message.getProxyType()
@@ -47,9 +46,8 @@ public class TransferMessage implements Runnable {
         try {
             channel.writeAndFlush(proxyMessage);
         } catch (Exception e) {
-            LoggerUtils.info(this.getClass(), "转发消息发生异常:" + e.getMessage());
-            if (channel != null)
-                ServerBeanManager.getUserSessionService().get(message.getSessionID()).close();
+            logger.error("[转发消息]转发消息发生异常:", e);
+            ServerBeanManager.getUserSessionService().get(message.getSessionID()).close();
         }
     }
 }

@@ -7,7 +7,6 @@ import com.proxy.common.entity.server.ProxyChannel;
 import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.protocol.Message;
-import com.proxy.common.util.IPGenerate;
 import com.proxy.server.event.TransferEvent;
 import com.proxy.server.service.ServerBeanManager;
 import com.proxy.server.util.ProxyUtil;
@@ -22,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -77,12 +75,8 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 处理http 请求
-     *
-     * @param ctx
-     * @param request
-     * @throws Exception
      */
-    public void httpHandler(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
+    private void httpHandler(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
 
 
         Channel userChannel = ctx.channel();
@@ -124,7 +118,7 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
             if (StringUtils.isNotBlank(realServer.getAddress())) {
 
                 String newReferer;
-                if (realServer.getRealHostPort().intValue() == CommonConstant.DEFAULT_HTTP_PORT) {
+                if (realServer.getRealHostPort() == CommonConstant.DEFAULT_HTTP_PORT) {
                     newReferer = referer.replace(oldHost, realServer.getRealHost());
                 } else {
                     newReferer = referer.replace(oldHost, realServer.getAddress());
@@ -134,28 +128,10 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
         }
 
         //设置host为请求服务器地址
-        if (realServer.getRealHostPort().intValue() == CommonConstant.DEFAULT_HTTP_PORT) {
+        if (realServer.getRealHostPort() == CommonConstant.DEFAULT_HTTP_PORT) {
             request.headers().set(HttpHeaderNames.HOST, realServer.getRealHost());
         } else {
             request.headers().set(HttpHeaderNames.HOST, realServer.getAddress());
-        }
-
-
-        String forward = realServer.getForward();
-
-        /**
-         *修改 forward 值
-         */
-        if (StringUtils.isNotBlank(forward)) {
-
-            if (CommonConstant.HeaderAttr.Forwarded_Random.equals(forward)) {
-                request.headers().set("X-Forwarded-For", IPGenerate.getRandomIp());
-            } else if (CommonConstant.HeaderAttr.Forwarded_Default.equals(forward)) {
-                InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
-                request.headers().add("X-Forwarded-For", sa.getHostString());
-            } else if (ProxyUtil.isIpAddr(forward)) {
-                request.headers().set("X-Forwarded-For", forward);
-            }
         }
 
 
@@ -201,7 +177,7 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("用户请求发生异常");
         ctx.channel().close();
     }

@@ -52,9 +52,6 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     /**
      * 代理服务器接收到客户端发送的消息后,
      * 转发给 用户端 channle
-     *
-     * @param ctx
-     * @param proxyMessage
      */
     private void handleTransferMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
@@ -72,9 +69,6 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 代理客户端与真实服务器连接建立成功
-     *
-     * @param ctx
-     * @param proxyMessage
      */
     private void handleConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
@@ -95,9 +89,6 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 需要用户重新发起请求
-     *
-     * @param ctx
-     * @param proxyMessage
      */
     private void handleReConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
@@ -112,9 +103,6 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 代理客户端与真实服务器连接失败
-     *
-     * @param ctx
-     * @param proxyMessage
      */
     private void handleDisConnectMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
 
@@ -135,20 +123,16 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 代理服务器发生异常
-     *
-     * @param channel
      */
-    public void exceptionHandle(Channel channel) {
+    private void exceptionHandle(Channel channel) {
         // 获取客户端key
         String key = ServerBeanManager.getClientService().getClientKey(channel);
-        if (key != null) {
-            //获取客户端节点信息
-            ClientNode node = ServerBeanManager.getClientService().get(key);
-            if (node != null) {
-                node.setStatus(CommonConstant.ClientStatus.OFFLINE);
-                channel.close();
-                logger.error("异常:代理服务器与客户端({})失去连接", node.getClientKey());
-            }
+        //获取客户端节点信息
+        ClientNode node = ServerBeanManager.getClientService().get(key);
+        if (node != null) {
+            node.setStatus(CommonConstant.ClientStatus.OFFLINE);
+            channel.close();
+            logger.error("异常:代理服务器与客户端({})失去连接", node.getClientKey());
         }
     }
 }

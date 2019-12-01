@@ -5,6 +5,6 @@ package com.proxy.server.service;
  */
 public interface LifeCycle {
 
-    public void shutDown();
+    void shutDown();
 
 }

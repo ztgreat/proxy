@@ -41,15 +41,7 @@ public class ProxyRealServer {
      * 代理客户端key
      */
     private String clientKey;
-    /**
-     * 在http代理中的header 属性中,设置X-Forwarded-For 属性
-     * 值:
-     * none    :默认值不设置该属性
-     * default : 默认值,代理服务器地址
-     * random  : 表示随机设定值
-     * ip地址   : 指定值
-     */
-    private String forward;
+
     /**
      * 描述
      */
@@ -58,14 +50,6 @@ public class ProxyRealServer {
      * 该代理状态
      */
     private int status;
-
-    public String getForward() {
-        return forward;
-    }
-
-    public void setForward(String forward) {
-        this.forward = forward;
-    }
 
     public String getName() {
         return name;
@@ -103,7 +87,7 @@ public class ProxyRealServer {
         if (realHost == null || realHostPort == null) {
             return null;
         }
-        return new StringBuilder(realHost).append(":").append(realHostPort).toString();
+        return realHost + ":" + realHostPort;
     }
 
     public String getClientKey() {

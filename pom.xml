@@ -36,6 +36,12 @@
             <version>4.1.42.Final</version>
         </dependency>
 
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.0.6</version>
+        </dependency>
+
         <!-- protostuff -->
         <dependency>
             <groupId>io.protostuff</groupId>

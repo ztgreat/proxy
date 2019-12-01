@@ -35,9 +35,9 @@ public class ProxyChannelService implements LifeCycle {
     /**
      * 绑定tcp 服务
      *
-     * @param serverPort
-     * @param bootstrap
-     * @param proxyRealServer
+     * @param serverPort      服务端口
+     * @param bootstrap       启动器
+     * @param proxyRealServer 真正提供服务的类
      * @throws Exception
      */
     public void bindForTCP(Integer serverPort, ServerBootstrap bootstrap, ProxyRealServer proxyRealServer) throws Exception {
@@ -48,7 +48,7 @@ public class ProxyChannelService implements LifeCycle {
      * 解绑 服务器端口
      *
      * @param serverPort 需要解绑的端口
-     * @return
+     * @return boolean
      */
     public boolean unBind(Integer serverPort) {
 
@@ -58,8 +58,8 @@ public class ProxyChannelService implements LifeCycle {
     /**
      * 根据服务端口,返回绑定信息
      *
-     * @param serverPort
-     * @return
+     * @param serverPort 服务端口
+     * @return ProxyChannel
      */
     @Deprecated
     public ProxyChannel getByServerPort(int serverPort) {
@@ -70,7 +70,7 @@ public class ProxyChannelService implements LifeCycle {
      * 根据服务域名,返回绑定信息
      *
      * @param domain
-     * @return
+     * @return ProxyChannel
      */
     @Deprecated
     public ProxyChannel getByServerdomain(String domain) {
@@ -82,7 +82,7 @@ public class ProxyChannelService implements LifeCycle {
      * 获取代理信息
      *
      * @param key 可能是服务器端口,也可以是指定的域名
-     * @return
+     * @return ProxyChannel
      */
     public ProxyChannel getServerProxy(Object key) {
         return proxyChannelDao.getServerProxy(key);
@@ -105,7 +105,7 @@ public class ProxyChannelService implements LifeCycle {
                 entry.getValue().getChannel().close();
                 logger.debug("代理服务(端口/域名):{} 退出", entry.getKey());
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
     }

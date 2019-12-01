@@ -13,7 +13,7 @@ public class ExitHandler extends Thread {
         try {
             ServerBeanManager.getProxyServer().shutDown();
             ServerBeanManager.getProxyChannelService().shutDown();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
 

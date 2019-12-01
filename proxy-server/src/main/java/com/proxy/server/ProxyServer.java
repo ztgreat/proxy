@@ -6,12 +6,11 @@ import com.proxy.common.entity.server.ClientNode;
 import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.server.handler.*;
+import com.proxy.server.service.ConfigService;
 import com.proxy.server.service.LifeCycle;
 import com.proxy.server.service.LogBackConfigLoader;
 import com.proxy.server.service.ServerBeanManager;
-import com.proxy.server.service.SharableHandlerManager;
 import com.proxy.server.task.ExitHandler;
-import com.proxy.server.util.ProxyUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -43,27 +42,15 @@ public class ProxyServer implements LifeCycle {
      * 长度域字节数
      */
     private static final int LENGTH_FIELD_LENGTH = 4;
-    /**
-     * 跳过的字节数
-     */
-    private static final int INITIAL_BYTES_TO_STRIP = 0;
-    /**
-     * 数据长度修正
-     */
-    private static final int LENGTH_ADJUSTMENT = 0;
-    /**
-     * 并发量
-     */
-    public static int concurrent = 1000;
 
     /**
      * 绑定端口,默认6666
      */
-    public int port;
+    private int port;
     /**
      * http 代理通道
      */
-    public Integer httpPort;
+    private Integer httpPort;
 
     /**
      * 服务端channel
@@ -75,10 +62,6 @@ public class ProxyServer implements LifeCycle {
         this.port = 6666;
     }
 
-    public ProxyServer(int port) {
-        this.port = port;
-    }
-
     public static void main(String[] args) throws Exception {
 
         //加载日志
@@ -86,11 +69,14 @@ public class ProxyServer implements LifeCycle {
         try {
             //退出钩子
             Runtime.getRuntime().addShutdownHook(new ExitHandler());
+            //创建代理服务器,如果没有指定端口，则默认使用 6666 端口
             ProxyServer proxyServer = new ProxyServer();
+            //将代理服务保存,方便后续使用
             ServerBeanManager.setProxyServer(proxyServer);
+            //开启代理服务
             proxyServer.start();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("启动代理服务失败：", e);
         }
 
     }
@@ -118,13 +104,10 @@ public class ProxyServer implements LifeCycle {
         try {
             future = bootstrap.bind(port);
 
-            future.channel().closeFuture().addListeners(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    logger.info("等待代理服务退出...");
-                    bossGroup.shutdownGracefully();
-                    workerGroup.shutdownGracefully();
-                }
+            future.channel().closeFuture().addListeners((ChannelFutureListener) channelFuture -> {
+                logger.info("等待代理服务退出...");
+                bossGroup.shutdownGracefully();
+                workerGroup.shutdownGracefully();
             });
 
             logger.info("服务器监听端口 {}", port);
@@ -134,29 +117,25 @@ public class ProxyServer implements LifeCycle {
         return future;
     }
 
-    public void start() throws Exception {
+    private void start() {
 
         //读取代理服务配置文件
         ServerBeanManager.getConfigService().readServerConfig();
 
-        if (ServerBeanManager.getConfigService().getConfigure("port") != null) {
-            this.port = (int) ServerBeanManager.getConfigService().getConfigure("port");
-        }
-        if (ServerBeanManager.getConfigService().getConfigure("concurrent") != null) {
-            ProxyServer.concurrent = (int) ServerBeanManager.getConfigService().getConfigure("concurrent");
+        ConfigService configService = ServerBeanManager.getConfigService();
+
+        // 获取端口
+        if (configService.getConfigure("port") != null) {
+            this.port = (int) configService.getConfigure("port");
         }
 
-        if (ServerBeanManager.getConfigService().getConfigure("httpPort") != null) {
-            //启动http 转发服务
-            this.httpPort = (int) ServerBeanManager.getConfigService().getConfigure("httpPort");
+        //启动http 转发服务
+        if (configService.getConfigure("httpPort") != null) {
+            this.httpPort = (int) configService.getConfigure("httpPort");
         }
 
-        try {
-            //配置代理信息
-            configurProxy();
-        } catch (Exception e) {
-            return;
-        }
+        //配置代理信息
+        configurProxy();
 
         ChannelFuture mainFuture = null;
 
@@ -179,10 +158,11 @@ public class ProxyServer implements LifeCycle {
             if (httpFuture != null) {
                 httpFuture.channel().close();
             }
+            logger.error("代理服务 启动失败：", e);
         }
     }
 
-    public ChannelFuture startMainServer() {
+    private ChannelFuture startMainServer() {
 
         //根据配置文件启动服务
         ChannelFuture future = bind();
@@ -192,19 +172,15 @@ public class ProxyServer implements LifeCycle {
 
     /**
      * 配置代理信息
-     *
-     * @throws Exception
      */
-    public void configurProxy() throws Exception {
+    private void configurProxy() {
+        //获取客户端配置信息
         Map<String, List<Map<String, Object>>> nodes = (Map<String, List<Map<String, Object>>>) ServerBeanManager.getConfigService().getConfigure("client");
         for (Map.Entry<String, List<Map<String, Object>>> m : nodes.entrySet()) {
             ClientNode clientNode = new ClientNode();
             clientNode.setClientKey(m.getKey());
             clientNode.setStatus(CommonConstant.ClientStatus.ACTIVE);
-//            clientNode.setName(m.getByServerPort("name"));
-
             List<Map<String, Object>> reals = m.getValue();
-
             for (Map<String, Object> real : reals) {
                 ProxyRealServer proxy = new ProxyRealServer();
                 proxy.setClientKey(m.getKey());
@@ -213,94 +189,99 @@ public class ProxyServer implements LifeCycle {
                 proxy.setDescription((String) real.get("description"));
                 String proxyType = (String) real.get("proxyType");
                 if (proxyType.equalsIgnoreCase("http")) {
-                    proxy.setDomain((String) real.get("domain"));
-                    Integer serverport = (Integer) real.get("serverport");
-                    String domain = proxy.getDomain();
-
-                    if (domain != null && this.httpPort == null) {
-                        logger.error("配置文件出错,http域名代理需要配置httpPort端口");
-                        throw new RuntimeException();
-                    }
-
-                    if (StringUtils.isBlank(domain) && serverport == null) {
-                        logger.error("配置文件出错,http代理至少要有serverport或者domain一种");
-                        throw new RuntimeException();
-                    }
-                    String forward = (String) real.get("forward");
-
-                    if (forward != null) {
-
-                        if (CommonConstant.HeaderAttr.Forwarded_Default.equals(forward)) {
-                            //指定为服务器ip
-                            proxy.setForward(CommonConstant.HeaderAttr.Forwarded_Default);
-                        } else if (CommonConstant.HeaderAttr.Forwarded_Random.equals(forward)) {
-                            //随机ip
-                            proxy.setForward(CommonConstant.HeaderAttr.Forwarded_Random);
-                        } else if (ProxyUtil.isIpAddr(forward)) {
-                            //用户指定ip
-                            proxy.setForward(forward);
-                        } else if (!CommonConstant.HeaderAttr.Forwarded_None.equals(forward)) {
-                            logger.error("配置文件出错,http代理forward 配置错误");
-                            throw new RuntimeException();
-                        }
-                    }
-
-                    proxy.setServerPort(serverport);
-                    proxy.setProxyType(CommonConstant.ProxyType.HTTP);
-                    clientNode.addRealServer(proxy.getDomain() == null ? serverport : proxy.getDomain(), proxy);
-                } else if (proxyType.equalsIgnoreCase("tcp")) {
-                    proxy.setProxyType(CommonConstant.ProxyType.TCP);
-                    proxy.setServerPort((Integer) real.get("serverport"));
-                    clientNode.addRealServer(proxy.getServerPort(), proxy);
-                } else {
+                    buildHttp(proxy, real, clientNode);
                     continue;
                 }
+                if (proxyType.equalsIgnoreCase("tcp")) {
+                    buildTcp(proxy, real, clientNode);
+                    continue;
+                }
+                logger.warn("目前只支持http,tcp,不支持:{}", proxyType);
             }
             ServerBeanManager.getClientService().add(clientNode.getClientKey(), clientNode);
         }
     }
 
-    public ChannelFuture startHttpServer() throws RuntimeException {
+    /**
+     * 构建tcp 代理信息
+     *
+     * @param proxy      真实服务
+     * @param real       配置信息
+     * @param clientNode 客户端节点
+     */
+    private void buildTcp(ProxyRealServer proxy, Map<String, Object> real, ClientNode clientNode) {
+        proxy.setProxyType(CommonConstant.ProxyType.TCP);
+        proxy.setServerPort((Integer) real.get("serverport"));
+        clientNode.addRealServer(proxy.getServerPort(), proxy);
+    }
 
-        if (this.httpPort != null) {
-            //启动http 转发服务
+    /**
+     * 构建 http 代理信息
+     *
+     * @param proxy      真实服务
+     * @param real       配置信息
+     * @param clientNode 客户端节点
+     */
+    private void buildHttp(ProxyRealServer proxy, Map<String, Object> real, ClientNode clientNode) {
 
-            //绑定客户端服务端口
-            NioEventLoopGroup serverWorkerGroup = new NioEventLoopGroup();
-            NioEventLoopGroup serverBossGroup = new NioEventLoopGroup();
-            ServerBootstrap bootstrap = new ServerBootstrap();
-            bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(SharableHandlerManager.getTrafficLimitHandler());
-                            ch.pipeline().addLast(SharableHandlerManager.getTrafficCollectionHandler());
-                            //http请求消息解码器
-                            ch.pipeline().addLast("httpDecoder", new HttpRequestDecoder());
-                            ch.pipeline().addLast("connectHandler", new HttpNoticeChannelHandler());
-                            //解析 HTTP POST 请求
-                            ch.pipeline().addLast("httpObject", new HttpObjectAggregator(2 * 1024 * 1024));
-                            ch.pipeline().addLast("transferHandler", new HttpChannelHandler());
-                        }
-                    });
-            try {
-                //绑定服务端口,会更新代理状态
-                ChannelFuture future = ServerBeanManager.getProxyChannelService().bind(this.httpPort, bootstrap, CommonConstant.ProxyType.HTTP, this.httpPort);
-                future.channel().closeFuture().addListeners(new ChannelFutureListener() {
+        proxy.setDomain((String) real.get("domain"));
+        Integer serverport = (Integer) real.get("serverport");
+        String domain = proxy.getDomain();
+
+        if (domain != null && this.httpPort == null) {
+            logger.error("配置文件出错,http域名代理需要配置httpPort端口");
+            throw new RuntimeException();
+        }
+
+        if (StringUtils.isBlank(domain) && serverport == null) {
+            logger.error("配置文件出错,http代理至少要有serverport或者domain一种");
+            throw new RuntimeException();
+        }
+        proxy.setServerPort(serverport);
+        proxy.setProxyType(CommonConstant.ProxyType.HTTP);
+        clientNode.addRealServer(proxy.getDomain() == null ? serverport : proxy.getDomain(), proxy);
+    }
+
+    private ChannelFuture startHttpServer() throws RuntimeException {
+
+        if (httpPort == null) {
+            return null;
+        }
+
+        //启动http 转发服务
+
+        //绑定客户端服务端口
+        NioEventLoopGroup serverWorkerGroup = new NioEventLoopGroup();
+        NioEventLoopGroup serverBossGroup = new NioEventLoopGroup();
+        ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                        logger.info("等待http代理服务退出...");
-                        serverWorkerGroup.shutdownGracefully();
-                        serverBossGroup.shutdownGracefully();
+                    public void initChannel(SocketChannel ch) {
+                        //暂时先关闭
+                        //ch.pipeline().addLast(SharableHandlerManager.getTrafficLimitHandler());
+                        //ch.pipeline().addLast(SharableHandlerManager.getTrafficCollectionHandler());
+                        //http请求消息解码器
+                        ch.pipeline().addLast("httpDecoder", new HttpRequestDecoder());
+                        ch.pipeline().addLast("connectHandler", new HttpNoticeChannelHandler());
+                        //解析 HTTP POST 请求
+                        ch.pipeline().addLast("httpObject", new HttpObjectAggregator(2 * 1024 * 1024));
+                        ch.pipeline().addLast("transferHandler", new HttpChannelHandler());
                     }
                 });
-                return future;
-            } catch (Exception e) {
-                logger.error("http服务端口 {} 绑定失败:" + e.getMessage(), this.httpPort);
-                throw new RuntimeException();
-            }
+        try {
+            //绑定服务端口,会更新代理状态
+            ChannelFuture future = ServerBeanManager.getProxyChannelService().bind(this.httpPort, bootstrap, CommonConstant.ProxyType.HTTP, this.httpPort);
+            future.channel().closeFuture().addListeners((ChannelFutureListener) channelFuture -> {
+                logger.info("等待http代理服务退出...");
+                serverWorkerGroup.shutdownGracefully();
+                serverBossGroup.shutdownGracefully();
+            });
+            return future;
+        } catch (Exception e) {
+            logger.error("http服务端口 {} 绑定失败:" + e.getMessage(), this.httpPort);
+            throw new RuntimeException();
         }
-        return null;
     }
 
     @Override
@@ -309,7 +290,7 @@ public class ProxyServer implements LifeCycle {
             this.channel.close();
             logger.debug("{}端口:代理服务退出:", this.port);
         } catch (Exception e) {
-
+            logger.error("代理服务退出异常:", e);
         }
     }
 }

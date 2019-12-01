@@ -18,7 +18,7 @@ public class TCPHandler extends ChannelInboundHandlerAdapter {
     private static Logger logger = LoggerFactory.getLogger(TCPHandler.class);
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         Channel realServerChannel = ctx.channel();
 
@@ -53,18 +53,18 @@ public class TCPHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.debug("异常:与真实服务器连接断开:" + cause.getMessage());
         removeConnect(ctx);
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         logger.debug("与真实服务器连接断开");
         removeConnect(ctx);
     }
 
-    public void removeConnect(ChannelHandlerContext ctx) {
+    private void removeConnect(ChannelHandlerContext ctx) {
         Long sessionID = ClientBeanManager.getProxyService().getRealServerChannelSessionID(ctx.channel());
         ClientBeanManager.getProxyService().removeRealServerChannel(sessionID);
 

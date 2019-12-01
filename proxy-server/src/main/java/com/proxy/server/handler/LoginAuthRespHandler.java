@@ -24,7 +24,7 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter {
     private static Logger logger = LoggerFactory.getLogger(LoginAuthRespHandler.class);
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
 
         if (msg instanceof ProxyMessage) {
@@ -73,7 +73,6 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter {
                     String loginMsg = "登录失败:客户端尚未注册或被禁止登录";
                     loginRespone(ctx, loginMsg, CommonConstant.Login.LOGIN_FAIL);
                     closeChannle(ctx);
-                    return;
                 }
 
             } else {
@@ -90,12 +89,8 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 保存or更新 client到内存,同时启动代理服务
-     *
-     * @param client
-     * @param ctx
-     * @param message
      */
-    public void saveClient2Cache(ClientNode client, ChannelHandlerContext ctx, ProxyMessage message) {
+    private void saveClient2Cache(ClientNode client, ChannelHandlerContext ctx, ProxyMessage message) {
 
         String key = new String(message.getData());
         ctx.channel().attr(CommonConstant.ServerChannelAttributeKey.CLIENT_KEY).set(key);
@@ -127,18 +122,14 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 登录响应
-     *
-     * @param ctx
-     * @param msg
-     * @param loginResult
      */
-    public void loginRespone(ChannelHandlerContext ctx, String msg, byte loginResult) {
+    private void loginRespone(ChannelHandlerContext ctx, String msg, byte loginResult) {
 
         ProxyMessage loginResp = ProxyMessageUtil.buildLoginResp(new byte[]{loginResult}, msg.getBytes());
         ctx.writeAndFlush(loginResp);
     }
 
-    public void closeChannle(ChannelHandlerContext ctx) {
+    private void closeChannle(ChannelHandlerContext ctx) {
         if (ctx != null && ctx.channel() != null && ctx.channel().isActive()) {
             Channel userChannel = ctx.channel();
             InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();

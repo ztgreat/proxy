@@ -52,7 +52,7 @@ public class ProxyDao {
     }
 
     public int getProxyType(Channel realServerChannel) {
-        return Integer.valueOf(realServerChannel.attr(CommonConstant.UserChannelAttributeKey.TYPE).get());
+        return Integer.parseInt(realServerChannel.attr(CommonConstant.UserChannelAttributeKey.TYPE).get());
     }
 
     public String getProxyServer(Channel realServerChannel) {

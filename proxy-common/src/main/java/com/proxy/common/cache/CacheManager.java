@@ -8,9 +8,7 @@ package com.proxy.common.cache;
 public interface CacheManager<K, V> {
 
     /**
-     * 得到缓存容器
-     *
-     * @return
+     * 获取缓存容器
      */
     Cache getCache(String name);
 

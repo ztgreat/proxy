@@ -7,7 +7,10 @@ import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.util.ProxyMessageUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +29,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         ProxyMessage message = (ProxyMessage) msg;
         byte type = message.getType();
@@ -52,7 +55,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         Long sessionID = proxyMessage.getSessionID();
 
         RealServer realServer = ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
-        Channel realServerChannel = null;
+        Channel realServerChannel;
         if ((realServer != null) && (realServerChannel = realServer.getChannel()) != null) {
 
             byte requestType = proxyMessage.getProxyType();
@@ -109,34 +112,30 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         final int port = Integer.parseInt(serverInfo[1]);
 
 
-        realServerBootStrap.connect(ip, port).addListener(new ChannelFutureListener() {
+        realServerBootStrap.connect(ip, port).addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
 
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (future.isSuccess()) {
+                Channel realServerChannel = future.channel();
 
-                    Channel realServerChannel = future.channel();
+                logger.debug("客户端连接真实服务器成功{}", ip + ":" + port);
 
-                    logger.debug("客户端连接真实服务器成功{}", ip + ":" + port);
+                RealServer realServer = new RealServer();
 
-                    RealServer realServer = new RealServer();
+                realServer.setChannel(realServerChannel);
+                realServer.setRealHost(ip);
+                realServer.setRealHostPort(port);
+                realServer.setProxyType(proxyType);
+                realServer.setStatus(CommonConstant.ProxyStatus.ONLINE);
 
-                    realServer.setChannel(realServerChannel);
-                    realServer.setRealHost(ip);
-                    realServer.setRealHostPort(port);
-                    realServer.setProxyType(proxyType);
-                    realServer.setStatus(CommonConstant.ProxyStatus.ONLINE);
-
-                    ClientBeanManager.getProxyService().addRealServerChannel(sessionID, realServer, realServerChannel, String.valueOf(proxyType), proxyServer);
+                ClientBeanManager.getProxyService().addRealServerChannel(sessionID, realServer, realServerChannel, String.valueOf(proxyType), proxyServer);
 
 
-                    ProxyMessage proxyMessage = ProxyMessageUtil.buildConnectSuccess(sessionID, null);
-                    channel.writeAndFlush(proxyMessage);
-                } else {
-                    logger.error("客户端连接真实服务器({})失败:{}", ip + ":" + port + " " + future.cause().getMessage());
-                    ProxyMessage proxyMessage = ProxyMessageUtil.buildConnectFail(sessionID, null);
-                    channel.writeAndFlush(proxyMessage);
-                }
+                ProxyMessage proxyMessage1 = ProxyMessageUtil.buildConnectSuccess(sessionID, null);
+                channel.writeAndFlush(proxyMessage1);
+            } else {
+                logger.error("客户端连接真实服务器({})失败:{}", ip + ":" + port, future.cause().getMessage());
+                ProxyMessage proxyMessage1 = ProxyMessageUtil.buildConnectFail(sessionID, null);
+                channel.writeAndFlush(proxyMessage1);
             }
         });
     }
@@ -150,7 +149,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         final int port = Integer.parseInt(serverInfo[1]);
 
         RealServer realServer = ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
-        Channel realServerChannel = null;
+        Channel realServerChannel;
         if (realServer != null && (realServerChannel = realServer.getChannel()) != null) {
             realServerChannel.close();
             ClientBeanManager.getProxyService().removeRealServerChannel(sessionID);
@@ -161,13 +160,13 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
 
     @Override
-    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) {
 
         logger.debug("客户端和代理服务器连接通道可写");
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
 
         ClientBeanManager.getProxyService().clear();
         ctx.channel().close();
@@ -175,7 +174,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         ClientBeanManager.getProxyService().clear();
         ctx.channel().close();
         logger.info("和服务器连接断开:清理数据");

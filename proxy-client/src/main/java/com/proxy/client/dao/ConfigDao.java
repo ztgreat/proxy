@@ -4,7 +4,10 @@ package com.proxy.client.dao;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public class ConfigDao {
 
@@ -24,8 +27,7 @@ public class ConfigDao {
 
         Set keys = prop.keySet();
         config = new HashMap<>();
-        for (Iterator<String> it = keys.iterator(); it.hasNext(); ) {
-            String key = it.next();
+        for (String key : (Iterable<String>) keys) {
             config.put(key, prop.getProperty(key));
         }
         return config;
