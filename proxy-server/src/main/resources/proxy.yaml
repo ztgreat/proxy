@@ -16,6 +16,18 @@ client:
                   realhost: 127.0.0.1
                   realhostport: 3306
                   description: mysql 代理
+                # 也可以 端口转发http 流量，用tcp 代理模式，这样不会解析包，更快
+                - serverport: 9000
+                  proxyType: tcp
+                  realhost: 127.0.0.1
+                  realhostport: 8000
+                  description: http代理
+                # ssh 代理
+                - serverport: 2222
+                  proxyType: tcp
+                  realhost: 127.0.0.1
+                  realhostport: 22
+                  description: ssh 代理
 
 
 
