@@ -18,9 +18,10 @@ import java.util.Map;
 
 /**
  * 心跳处理 handler
+ *
  * @author ztgreat
  */
-public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
+public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter {
 
     private static Logger logger = LoggerFactory.getLogger(HeartBeatRespHandler.class);
 
@@ -30,7 +31,7 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
-        if (msg instanceof  ProxyMessage){
+        if (msg instanceof ProxyMessage) {
 
             ProxyMessage message = (ProxyMessage) msg;
             byte type = message.getType();
@@ -40,11 +41,11 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
                 //构造心态响应消息
                 ProxyMessage heartBeat = ProxyMessageUtil.buildHeartBeatResp();
                 ctx.writeAndFlush(heartBeat);
-            } else{
+            } else {
                 //向上传递消息
                 ctx.fireChannelRead(msg);
             }
-        }else {
+        } else {
             //向后转发消息
             //ctx.fireChannelRead(msg);
 
@@ -81,7 +82,7 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
                 default:
                     break;
             }
-        }else {
+        } else {
             super.userEventTriggered(ctx, evt);
         }
 
@@ -89,6 +90,7 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
 
     /**
      * 和客户端通信超时处理(这里超时:n倍心跳时间)
+     *
      * @param ctx
      */
     protected void handleReaderIdle(ChannelHandlerContext ctx) {
@@ -108,52 +110,48 @@ public class HeartBeatRespHandler extends ChannelInboundHandlerAdapter{
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("发生异常:{}",cause.getMessage());
+        logger.error("发生异常:{}", cause.getMessage());
         disConnectHandle(ctx.channel());
     }
 
 
-
     /**
      * 代理服务器和客户端失去连接
+     *
      * @param channel
      */
-    public  void disConnectHandle(Channel channel){
+    public void disConnectHandle(Channel channel) {
         // 获取客户端key
-        String key= ServerBeanManager.getClientService().getClientKey(channel);
-        if (key!=null){
-            //获取客户端节点信息
-            ClientNode node= ServerBeanManager.getClientService().get(key);
-            if (node!=null){
-                //更新节点 状态(离线)
-                ServerBeanManager.getClientService().setNodeStatus(key, CommonConstant.ClientStatus.OFFLINE);
+        String key = ServerBeanManager.getClientService().getClientKey(channel);
+        //获取客户端节点信息
+        ClientNode node = ServerBeanManager.getClientService().get(key);
+        //更新节点 状态(离线)
+        ServerBeanManager.getClientService().setNodeStatus(key, CommonConstant.ClientStatus.OFFLINE);
 
-                //移除客户端 channel
-                ServerBeanManager.getClientService().setNodeChannle(key,null);
+        //移除客户端 channel
+        ServerBeanManager.getClientService().setNodeChannle(key, null);
 
-                //取消代理通道
+        //取消代理通道
 
-                Map<Object, ProxyRealServer> port2RealServers = node.getServerPort2RealServer();
+        Map<Object, ProxyRealServer> port2RealServers = node.getServerPort2RealServer();
 
-                for(Map.Entry<Object,ProxyRealServer>entry:port2RealServers.entrySet()){
+        for (Map.Entry<Object, ProxyRealServer> entry : port2RealServers.entrySet()) {
 
-                    if(entry.getKey() instanceof  Integer){
-                        //释放绑定的代理服务器 服务端口
-                        ServerBeanManager.getProxyChannelService().unBind((Integer) entry.getKey());
-                        ServerBeanManager.getProxyChannelService().getServerProxy(entry.getKey()).setStatus(CommonConstant.ProxyStatus.OFFLINE);
-                        logger.info("解绑本地服务端口({})成功 客户端({})--{}",entry.getKey(),entry.getValue().getClientKey(),entry.getValue().getDescription());
-                    }
-                }
-
-                //移除客户端
-                //ServerBeanManager.getClientService().delete(key);
-
-                //关闭连接
-                channel.close();
-
-                logger.info("代理服务器与客户端({})失去连接",node.getClientKey());
+            if (entry.getKey() instanceof Integer) {
+                //释放绑定的代理服务器 服务端口
+                ServerBeanManager.getProxyChannelService().unBind((Integer) entry.getKey());
+                ServerBeanManager.getProxyChannelService().getServerProxy(entry.getKey()).setStatus(CommonConstant.ProxyStatus.OFFLINE);
+                logger.info("解绑本地服务端口({})成功 客户端({})--{}", entry.getKey(), entry.getValue().getClientKey(), entry.getValue().getDescription());
             }
-
         }
+
+        //移除客户端
+        //ServerBeanManager.getClientService().delete(key);
+
+        //关闭连接
+        channel.close();
+
+        logger.info("代理服务器与客户端({})失去连接", node.getClientKey());
+
     }
 }

@@ -3,8 +3,6 @@ package com.proxy.server.service;
 
 import com.proxy.common.protocol.Message;
 import com.proxy.server.task.TransferMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,7 +18,7 @@ public class TransferService {
     /**
      * 将消息转发给客户端
      *
-     * @param message
+     * @param message 消息
      */
     public void toClient(Message message) {
         executorService.submit(new TransferMessage(message));

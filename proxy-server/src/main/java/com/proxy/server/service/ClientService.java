@@ -34,11 +34,9 @@ public class ClientService {
 
         //1.添加客户端
         clientDao.add(clientKey, node);
-
         if (node.getStatus() != CommonConstant.ClientStatus.ONLINE) {
             return;
         }
-
         //2.开始为客户端绑定服务端口
 
         //绑定客户端服务端口
@@ -49,18 +47,18 @@ public class ClientService {
             /**
              * 如果是HTTP代理,并且设置了通过域名访问,则不需要单独绑定端口
              */
-            if (proxyRealServer.getProxyType().intValue() == CommonConstant.ProxyType.HTTP && StringUtils.isNotBlank(proxyRealServer.getDomain())) {
+            if (proxyRealServer.getProxyType() == CommonConstant.ProxyType.HTTP && StringUtils.isNotBlank(proxyRealServer.getDomain())) {
                 ServerBeanManager.getProxyChannelService().addByServerdomain(proxyRealServer.getDomain(), proxyRealServer);
                 proxyRealServer.setStatus(CommonConstant.ProxyStatus.ONLINE);
                 continue;
             }
 
-            if (proxyRealServer.getProxyType().intValue() == CommonConstant.ProxyType.HTTP) {
+            if (proxyRealServer.getProxyType() == CommonConstant.ProxyType.HTTP) {
 
                 //http 端口代理绑定
                 HttpProxy(keyToProxyRealServer.getKey(), proxyRealServer);
 
-            } else if (proxyRealServer.getProxyType().intValue() == CommonConstant.ProxyType.TCP) {
+            } else if (proxyRealServer.getProxyType() == CommonConstant.ProxyType.TCP) {
                 //tcp 端口代理绑定
                 TCPProxy(keyToProxyRealServer.getKey(), proxyRealServer);
             }
@@ -73,7 +71,7 @@ public class ClientService {
      * 绑定tcp 代理
      *
      * @param key             端口
-     * @param proxyRealServer
+     * @param proxyRealServer 真正的服务
      */
     private void TCPProxy(Object key, ProxyRealServer proxyRealServer) {
 
@@ -91,7 +89,7 @@ public class ClientService {
             bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
+                        public void initChannel(SocketChannel ch) {
 
                             ch.pipeline().addLast(SharableHandlerManager.getTrafficLimitHandler());
                             ch.pipeline().addLast(SharableHandlerManager.getTrafficCollectionHandler());
@@ -111,7 +109,7 @@ public class ClientService {
      * 绑定http代理
      *
      * @param key             端口
-     * @param proxyRealServer
+     * @param proxyRealServer 真正的服务
      */
     private void HttpProxy(Object key, ProxyRealServer proxyRealServer) {
 
@@ -130,7 +128,7 @@ public class ClientService {
             bootstrap.group(serverBossGroup, serverWorkerGroup).channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
+                        public void initChannel(SocketChannel ch) {
                             ch.pipeline().addLast(SharableHandlerManager.getTrafficLimitHandler());
                             ch.pipeline().addLast(SharableHandlerManager.getTrafficCollectionHandler());
                             //HttpRequestDecoder http请求消息解码器

@@ -50,7 +50,7 @@ public class ProxyClient {
     /**
      * 连接真实服务器启动器,使用时才初始化
      */
-    public static Bootstrap realServerBootstrap;
+    private static Bootstrap realServerBootstrap;
 
     /**
      * NioEventLoopGroup可以理解为一个线程池,
@@ -83,7 +83,7 @@ public class ProxyClient {
     /**
      * 连接代理服务器
      */
-    public void start() throws InterruptedException {
+    private void start() throws InterruptedException {
 
         initRealServerBoot();
 
@@ -92,8 +92,7 @@ public class ProxyClient {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     //初始化时将handler设置到ChannelPipeline
                     @Override
-                    public void initChannel(SocketChannel ch)
-                            throws Exception {
+                    public void initChannel(SocketChannel ch) {
                         //ch.pipeline().addLast("logs", new LoggingHandler(LogLevel.DEBUG));
                         ch.pipeline().addLast("idleStateHandler", new IdleStateHandler(10 * 3, 15 * 3, 20 * 3));
                         ch.pipeline().addLast(new ProxyMessageDecoder(2 * 1024 * 1024, 0, 4));
@@ -114,7 +113,7 @@ public class ProxyClient {
 
         try {
             clear();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
 
@@ -123,7 +122,7 @@ public class ProxyClient {
     /**
      * 初始化 连接后端真正服务器
      */
-    public void initRealServerBoot() {
+    private void initRealServerBoot() {
 
         //初始化
         realServerBootstrap = new Bootstrap();
@@ -143,24 +142,21 @@ public class ProxyClient {
         });
     }
 
-    public void doConnect(int retry) throws InterruptedException {
+    private void doConnect(int retry) throws InterruptedException {
 
         if (retry == 0)
             return;
         ChannelFuture future = clientBootstrap.connect(host, port);
         future.addListener(new ChannelFutureListener() {
-            public void operationComplete(ChannelFuture futureListener) throws Exception {
+            public void operationComplete(ChannelFuture futureListener) {
                 if (futureListener.isSuccess()) {
                     Channel channel = futureListener.channel();
                     logger.info("连接服务器({})成功", host);
 
-                    channel.closeFuture().addListeners(new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                    channel.closeFuture().addListeners((ChannelFutureListener) channelFuture -> {
 
-                            //channel 关闭后的操作
+                        //channel 关闭后的操作
 
-                        }
                     });
 
                 } else {
@@ -173,7 +169,7 @@ public class ProxyClient {
         doConnect(retry - 1);
     }
 
-    public void clear() {
+    private void clear() {
         ClientBeanManager.getProxyService().clear();
         clientGroup.shutdownGracefully();
         realServerGroup.shutdownGracefully();
@@ -185,7 +181,7 @@ public class ProxyClient {
         LogBackConfigLoader.load();
         String host = ClientBeanManager.getConfigService().readConfig().get("server.host");
         String port = ClientBeanManager.getConfigService().readConfig().get("server.port");
-        new ProxyClient(host, Integer.valueOf(port)).start();
+        new ProxyClient(host, Integer.parseInt(port)).start();
     }
 
 }

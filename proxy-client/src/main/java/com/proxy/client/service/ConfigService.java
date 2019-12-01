@@ -25,7 +25,7 @@ public class ConfigService {
             config = configDao.readConfig();
         } catch (Exception e) {
             logger.error("读取客户端配置文件 失败({})", e.getMessage());
-            return new HashMap<String, String>();
+            return new HashMap<>();
         }
         return config;
 

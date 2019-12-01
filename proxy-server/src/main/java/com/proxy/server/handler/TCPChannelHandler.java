@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 
 /**
  * 处理用户请求的handler
@@ -32,15 +33,13 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 为用户连接产生ID
-     *
-     * @return
      */
     private static Long getSessionID() {
         return ServerBeanManager.getSessionIDGenerate().generateId();
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
 
         Channel userChannel = ctx.channel();
         InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
@@ -77,7 +76,7 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         message.setSessionID(sessionID);
         message.setType(CommonConstant.MessageType.TYPE_CONNECT_REALSERVER);
         ProxyRealServer realServer = node.getServerPort2RealServer().get(sPort);
-        if (realServer == null) {
+        if (Objects.isNull(realServer)) {
             logger.error("端口{} 没有开启映射", sPort);
             ctx.channel().close();
             return;
@@ -107,7 +106,7 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         //代理类型
         Integer type = ServerBeanManager.getUserSessionService().getType(ctx.channel());
         if (type != null) {
-            if (type.intValue() == CommonConstant.ProxyType.TCP) {
+            if (type == CommonConstant.ProxyType.TCP) {
                 //tcp 类型
                 logger.debug("tcp代理");
                 tcpHandler(ctx, (ByteBuf) msg, CommonConstant.ProxyType.TCP);
@@ -115,16 +114,16 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
                 ReferenceCountUtil.release(msg);
                 logger.debug("非tcp代理:丢弃消息");
             }
+            return;
 
-        } else {
-            ReferenceCountUtil.release(msg);
-            logger.debug("消息格式错误:丢弃消息");
         }
+        ReferenceCountUtil.release(msg);
+        logger.debug("消息格式错误:丢弃消息");
 
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
 
         logger.debug("用户连接失效");
         Long sessionID = ServerBeanManager.getUserSessionService().getSessionID(ctx.channel());
@@ -140,7 +139,7 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         ProxyChannel proxyChannel = ServerBeanManager.getProxyChannelService().getServerProxy(sa.getPort());
 
         //如果不存在key,那么不存在该代理客户端，后续理应不再判断，暂时为了避免考虑不全，先判断多次
-        if (proxyChannel == null) {
+        if (Objects.isNull(proxyChannel)) {
             return;
         }
         ClientNode node = ServerBeanManager.getClientService().get(proxyChannel.getClientKey());
@@ -165,7 +164,7 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         message.setSessionID(sessionID);
         message.setType(CommonConstant.MessageType.TYPE_DISCONNECT);
         ProxyRealServer realServer = node.getServerPort2RealServer().get(sPort);
-        if (realServer == null) {
+        if (Objects.isNull(realServer)) {
             return;
         }
         String address = realServer.getAddress();
@@ -190,12 +189,8 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 处理tcp 请求
-     *
-     * @param ctx
-     * @param buf
-     * @throws Exception
      */
-    public void tcpHandler(ChannelHandlerContext ctx, ByteBuf buf, Integer proxyType) throws Exception {
+    private void tcpHandler(ChannelHandlerContext ctx, ByteBuf buf, Integer proxyType) throws Exception {
 
 
         Channel userChannel = ctx.channel();
@@ -223,7 +218,7 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
         //封装消息
         Long sessionID = ServerBeanManager.getUserSessionService().getSessionID(userChannel);
 
-        ProxyRealServer realServer = node.getServerPort2RealServer().get(sa.getPort());
+        //ProxyRealServer realServer = node.getServerPort2RealServer().get(sa.getPort());
 
         byte[] data = new byte[buf.readableBytes()];
         buf.readBytes(data);
@@ -244,10 +239,8 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 关闭用户连接
-     *
-     * @param ctx
      */
-    public void closeChannle(ChannelHandlerContext ctx) {
+    private void closeChannle(ChannelHandlerContext ctx) {
 
         Channel channel = ctx.channel();
 
@@ -257,7 +250,7 @@ public class TCPChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("发生异常({})", cause.getMessage());
         cause.printStackTrace();
         closeChannle(ctx);

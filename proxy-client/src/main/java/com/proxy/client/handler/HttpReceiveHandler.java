@@ -8,7 +8,10 @@ import com.proxy.common.protocol.CommonConstant;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,23 +60,14 @@ public class HttpReceiveHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 处理http 请求
-     *
-     * @param ctx
-     * @param request
-     * @throws Exception
      */
-    public void httpHandler(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
+    private void httpHandler(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
 
 
         String id = request.headers().get(CommonConstant.SESSION_NAME);
         Long sessionID = Long.valueOf(id);
-        if (sessionID == null) {
-            logger.debug("无法获取sessionId,丢弃消息");
-            ReferenceCountUtil.release(request);
-            return;
-        }
         RealServer realServer = ClientBeanManager.getProxyService().getRealServerChannel(sessionID);
-        Channel realServerChannel = null;
+        Channel realServerChannel;
 
         if (realServer == null || (realServerChannel = realServer.getChannel()) == null) {
             logger.debug("无法获取真实服务器连接,丢弃消息");

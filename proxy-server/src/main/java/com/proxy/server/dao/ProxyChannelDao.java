@@ -35,9 +35,8 @@ public class ProxyChannelDao {
      *
      * @param serverPort 服务器 服务端口
      * @param bootstrap  启动器
-     * @throws InterruptedException
      */
-    public ChannelFuture bind(final Integer serverPort, final ServerBootstrap bootstrap, int proxyType, Object saveKey) throws InterruptedException {
+    public ChannelFuture bind(final Integer serverPort, final ServerBootstrap bootstrap, int proxyType, Object saveKey) {
 
         return bootstrap.bind(serverPort).addListener(new ChannelFutureListener() {
             @Override
@@ -68,7 +67,6 @@ public class ProxyChannelDao {
      * 解绑 服务器端口
      *
      * @param serverPort 需要解绑的端口
-     * @return
      */
     public boolean unBind(Integer serverPort) {
         if (serverPort == null) {
@@ -88,9 +86,6 @@ public class ProxyChannelDao {
 
     /**
      * 根据服务端口,返回绑定信息
-     *
-     * @param serverPort
-     * @return
      */
     public ProxyChannel getByServerPort(int serverPort) {
         return proxyChannelCache.get(serverPort);
@@ -98,9 +93,6 @@ public class ProxyChannelDao {
 
     /**
      * 根据服务域名,返回绑定信息
-     *
-     * @param domain
-     * @return
      */
     public ProxyChannel getByServerdomain(String domain) {
         return proxyChannelCache.get(domain);
@@ -109,27 +101,25 @@ public class ProxyChannelDao {
 
     public void bindForTCP(Integer serverPort, ServerBootstrap bootstrap, ProxyRealServer proxyRealServer) {
 
-        bootstrap.bind(serverPort).addListener(new ChannelFutureListener() {
-            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+        bootstrap.bind(serverPort).addListener((ChannelFutureListener) channelFuture -> {
 
-                if (channelFuture.isSuccess()) {
-                    logger.info("绑定本地服务端口({})成功 客户端({})--{}", serverPort, proxyRealServer.getClientKey(), proxyRealServer.getDescription());
-                    //绑定成功
-                    ProxyChannel proxyChannel = new ProxyChannel();
-                    proxyChannel.setPort(serverPort);
-                    proxyChannel.setChannel(channelFuture.channel());
-                    proxyChannel.setBootstrap(bootstrap);
-                    proxyChannel.setClientKey(proxyRealServer.getClientKey());
-                    proxyChannel.setProxyType(CommonConstant.ProxyType.TCP);
-                    proxyChannelCache.put(serverPort, proxyChannel);
+            if (channelFuture.isSuccess()) {
+                logger.info("绑定本地服务端口({})成功 客户端({})--{}", serverPort, proxyRealServer.getClientKey(), proxyRealServer.getDescription());
+                //绑定成功
+                ProxyChannel proxyChannel = new ProxyChannel();
+                proxyChannel.setPort(serverPort);
+                proxyChannel.setChannel(channelFuture.channel());
+                proxyChannel.setBootstrap(bootstrap);
+                proxyChannel.setClientKey(proxyRealServer.getClientKey());
+                proxyChannel.setProxyType(CommonConstant.ProxyType.TCP);
+                proxyChannelCache.put(serverPort, proxyChannel);
 
-                    //设置状态
-                    proxyRealServer.setStatus(CommonConstant.ProxyStatus.ONLINE);
-                } else {
-                    logger.error("绑定本地服务端口{}失败", serverPort);
-                }
-
+                //设置状态
+                proxyRealServer.setStatus(CommonConstant.ProxyStatus.ONLINE);
+            } else {
+                logger.error("绑定本地服务端口{}失败", serverPort);
             }
+
         });
     }
 

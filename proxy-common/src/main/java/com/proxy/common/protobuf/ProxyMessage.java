@@ -11,39 +11,39 @@ public class ProxyMessage {
     /**
      * crc 校验
      */
-    Integer crcCode;
+    private Integer crcCode;
 
     /**
      * 回话id
      */
-    Long sessionID;
+    private Long sessionID;
 
     /**
      * 类型
      */
-    Byte type;
+    private Byte type;
 
     /**
      * 代理类型
      *
      * @see CommonConstant.ProxyType
      */
-    Byte proxyType;
+    private Byte proxyType;
 
     /**
      * 优先级
      */
-    Byte priority;
+    private Byte priority;
 
     /**
      * 命令
      */
-    byte[] command;
+    private byte[] command;
 
     /**
      * 数据
      */
-    byte[] data;
+    private byte[] data;
 
     public Integer getCrcCode() {
         return crcCode;

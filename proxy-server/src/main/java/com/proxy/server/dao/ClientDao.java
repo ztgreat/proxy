@@ -18,6 +18,7 @@ public class ClientDao {
 
     private static CacheManager<String, ClientNode> cacheManager = new MemoryCacheManager<String, ClientNode>();
 
+    // clientKey to ClientNode
     private static Cache<String, ClientNode> keyToNode = cacheManager.getCache("client_cache");
 
 
@@ -48,7 +49,6 @@ public class ClientDao {
         if (keyToNode.get(clientKey) != null) {
             keyToNode.get(clientKey).setChannel(channel);
         }
-
     }
 
     public Map<String, ClientNode> getAll() {

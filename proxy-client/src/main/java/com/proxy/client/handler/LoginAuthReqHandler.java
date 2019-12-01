@@ -17,14 +17,14 @@ public class LoginAuthReqHandler extends ChannelInboundHandlerAdapter {
     private static Logger logger = LoggerFactory.getLogger(LoginAuthReqHandler.class);
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         logger.debug("客户端发送登录信息");
         String clientKey = ClientBeanManager.getConfigService().readConfig().get("key");
         ctx.writeAndFlush(ProxyMessageUtil.buildLoginReq(null, clientKey.getBytes()));
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         ProxyMessage message = (ProxyMessage) msg;
         // 如果是握手应答消息，需要判断是否认证成功
@@ -49,7 +49,7 @@ public class LoginAuthReqHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         ctx.channel().close();
     }
 

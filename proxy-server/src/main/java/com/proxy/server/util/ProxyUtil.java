@@ -2,7 +2,6 @@ package com.proxy.server.util;
 
 
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.HttpRequest;
 
 import java.net.InetSocketAddress;
 import java.util.regex.Matcher;

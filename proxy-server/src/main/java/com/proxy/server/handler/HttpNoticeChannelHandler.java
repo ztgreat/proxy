@@ -18,6 +18,8 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 /**
  * 通知:代理客户端与真实服务器建立连接
  * <p>
@@ -36,111 +38,111 @@ public class HttpNoticeChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 为用户连接产生ID
-     *
-     * @return
      */
     private static Long getSessionID() {
         return ServerBeanManager.getSessionIDGenerate().generateId();
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         Channel userChannel = ctx.channel();
         Long sessionID = ServerBeanManager.getUserSessionService().getSessionID(userChannel);
         if (msg instanceof HttpRequest) {
 
             HttpRequest request = (HttpRequest) msg;
-            if (sessionID != null) {
+            if (Objects.nonNull(sessionID)) {
                 //向上传递消息
                 ctx.fireChannelRead(msg);
-            } else {
-
-                //需要先建立连接
-                ctx.channel().config().setAutoRead(false);
-
-                //获取 key,可能是端口,也可能是域名
-                Object proxyKey = ProxyUtil.getKey(request.headers().get(HttpHeaderNames.HOST), userChannel);
-
-                //保存代理key 到用户 channel
-                userChannel.attr(CommonConstant.UserChannelAttributeKey.PROXY_KEY).set(proxyKey.toString());
-
-                //根据域名获取代理信息
-                ProxyChannel proxyChannel = ServerBeanManager.getProxyChannelService().getServerProxy(proxyKey);
-
-                //如果不存在domain,那么不存在该代理客户端，后续理应不再判断，暂时为了避免考虑不全，先判断多次
-                if (proxyChannel == null) {
-                    closeChannle(ctx);
-                    ReferenceCountUtil.release(msg);
-                    logger.error("{}:代理客户端没有此代理通道信息", proxyKey);
-                    return;
-                }
-
-                ClientNode node = ServerBeanManager.getClientService().get(proxyChannel.getClientKey());
-                if (node == null || node.getChannel() == null || node.getStatus() != CommonConstant.ClientStatus.ONLINE) {
-                    closeChannle(ctx);
-                    ReferenceCountUtil.release(msg);
-                    logger.error("{}:没有代理客户端", proxyKey);
-                    return;
-                }
-                sessionID = getSessionID();
-
-                //将sessionID，用户ip,port，服务器port，封装到消息中
-
-                Message message = new Message();
-                message.setClientChannel(node.getChannel());
-                message.setSessionID(sessionID);
-                message.setType(CommonConstant.MessageType.TYPE_CONNECT_REALSERVER);
-                ProxyRealServer realServer = node.getServerPort2RealServer().get(proxyKey);
-                if (realServer == null) {
-                    closeChannle(ctx);
-                    ReferenceCountUtil.release(msg);
-                    logger.error("{}:没有代理客户端", proxyKey);
-                    return;
-                }
-                String address = realServer.getAddress();
-                message.setRemoteAddress(address);
-                message.setData(address.getBytes());
-                message.setProxyType(realServer.getProxyType().byteValue());
-
-                //填写全称,包括端口
-                message.setCommand(request.headers().get(HttpHeaderNames.HOST).getBytes());
-
-
-                //将通道保存 调用UserService(会保存代理类型 type)
-                ServerBeanManager.getUserSessionService().add(sessionID, ctx.channel(), realServer);
-
-                //调用ServerService 将消息 放入队列
-                ServerBeanManager.getTransferService().toClient(message);
-                logger.debug("通知客户端({})与真实服务器{}建立连接 ", node.getClientKey(), address);
-
-                ctx.fireChannelRead(msg);
-
-                logger.debug("用户请求访问通道设置为不可读");
+                return;
             }
+            //需要先建立连接
+            ctx.channel().config().setAutoRead(false);
 
-        } else if (msg instanceof HttpContent) {
-            if (sessionID != null) {
-                //向上传递消息
-                ctx.fireChannelRead(msg);
-            } else {
+            //获取 key,可能是端口,也可能是域名
+            Object proxyKey = ProxyUtil.getKey(request.headers().get(HttpHeaderNames.HOST), userChannel);
+
+            //保存代理key 到用户 channel
+            userChannel.attr(CommonConstant.UserChannelAttributeKey.PROXY_KEY).set(proxyKey.toString());
+
+            //根据域名获取代理信息
+            ProxyChannel proxyChannel = ServerBeanManager.getProxyChannelService().getServerProxy(proxyKey);
+
+            //如果不存在domain,那么不存在该代理客户端，后续理应不再判断，暂时为了避免考虑不全，先判断多次
+            if (proxyChannel == null) {
+                closeChannle(ctx);
                 ReferenceCountUtil.release(msg);
-                logger.error("需要先建立连接:丢弃消息");
+                logger.error("{}:代理客户端没有此代理通道信息", proxyKey);
+                return;
             }
-        } else {
-            ReferenceCountUtil.release(msg);
-            logger.error("未识别的消息:丢弃消息");
+
+            ClientNode node = ServerBeanManager.getClientService().get(proxyChannel.getClientKey());
+            if (node == null || node.getChannel() == null || node.getStatus() != CommonConstant.ClientStatus.ONLINE) {
+                closeChannle(ctx);
+                ReferenceCountUtil.release(msg);
+                logger.error("{}:没有代理客户端", proxyKey);
+                return;
+            }
+            sessionID = getSessionID();
+
+            //将sessionID，用户ip,port，服务器port，封装到消息中
+
+            Message message = new Message();
+            message.setClientChannel(node.getChannel());
+            message.setSessionID(sessionID);
+            message.setType(CommonConstant.MessageType.TYPE_CONNECT_REALSERVER);
+            ProxyRealServer realServer = node.getServerPort2RealServer().get(proxyKey);
+            if (Objects.isNull(realServer)) {
+                closeChannle(ctx);
+                ReferenceCountUtil.release(msg);
+                logger.error("{}:没有代理客户端", proxyKey);
+                return;
+            }
+            String address = realServer.getAddress();
+            message.setRemoteAddress(address);
+            message.setData(address.getBytes());
+            message.setProxyType(realServer.getProxyType().byteValue());
+
+            //填写全称,包括端口
+            message.setCommand(request.headers().get(HttpHeaderNames.HOST).getBytes());
+
+
+            //将通道保存 调用UserService(会保存代理类型 type)
+            ServerBeanManager.getUserSessionService().add(sessionID, ctx.channel(), realServer);
+
+            //调用ServerService 将消息 放入队列
+            ServerBeanManager.getTransferService().toClient(message);
+            logger.debug("通知客户端({})与真实服务器{}建立连接 ", node.getClientKey(), address);
+
+            ctx.fireChannelRead(msg);
+
+            logger.debug("用户请求访问通道设置为不可读");
+            return;
+
         }
+        if (msg instanceof HttpContent) {
+            if (Objects.nonNull(sessionID)) {
+                //向上传递消息
+                ctx.fireChannelRead(msg);
+                return;
+            }
+            ReferenceCountUtil.release(msg);
+            logger.error("需要先建立连接:丢弃消息");
+            return;
+        }
+
+        ReferenceCountUtil.release(msg);
+        logger.error("未识别的消息:丢弃消息");
 
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
 
         logger.debug("用户连接失效");
         Long sessionID = ServerBeanManager.getUserSessionService().getSessionID(ctx.channel());
 
-        if (sessionID == null) {
+        if (Objects.isNull(sessionID)) {
             return;
         }
 
@@ -148,7 +150,7 @@ public class HttpNoticeChannelHandler extends ChannelInboundHandlerAdapter {
         Channel userChannel = ctx.channel();
 
         //获取 key,可能是端口,也可能是域名
-        Object proxyKey = null;
+        Object proxyKey;
         try {
             //端口
             proxyKey = Integer.valueOf(userChannel.attr(CommonConstant.UserChannelAttributeKey.PROXY_KEY).get());
@@ -160,7 +162,7 @@ public class HttpNoticeChannelHandler extends ChannelInboundHandlerAdapter {
         ProxyChannel proxyChannel = ServerBeanManager.getProxyChannelService().getServerProxy(proxyKey);
 
         //如果不存在key,那么不存在该代理客户端，后续理应不再判断，暂时为了避免考虑不全，先判断多次
-        if (proxyChannel == null) {
+        if (Objects.isNull(proxyChannel)) {
             return;
         }
         ClientNode node = ServerBeanManager.getClientService().get(proxyChannel.getClientKey());
@@ -176,7 +178,7 @@ public class HttpNoticeChannelHandler extends ChannelInboundHandlerAdapter {
         message.setSessionID(sessionID);
         message.setType(CommonConstant.MessageType.TYPE_DISCONNECT);
         ProxyRealServer realServer = node.getServerPort2RealServer().get(proxyKey);
-        if (realServer == null) {
+        if (Objects.isNull(realServer)) {
             return;
         }
         String address = realServer.getAddress();
@@ -199,10 +201,8 @@ public class HttpNoticeChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 关闭用户连接
-     *
-     * @param ctx
      */
-    public void closeChannle(ChannelHandlerContext ctx) {
+    private void closeChannle(ChannelHandlerContext ctx) {
 
         Channel channel = ctx.channel();
         if (channel != null && channel.isActive()) {

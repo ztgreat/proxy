@@ -17,7 +17,7 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
     private static Logger logger = LoggerFactory.getLogger(HeartBeatReqHandler.class);
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
         if (msg instanceof ProxyMessage) {
 
@@ -58,17 +58,17 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
 
     }
 
-    protected void handleReaderIdle(ChannelHandlerContext ctx) {
+    private void handleReaderIdle(ChannelHandlerContext ctx) {
         sendHeartBeat(ctx);
         logger.debug("READER_IDLE 读超时");
     }
 
-    protected void handleWriterIdle(ChannelHandlerContext ctx) {
+    private void handleWriterIdle(ChannelHandlerContext ctx) {
         sendHeartBeat(ctx);
         logger.debug("WRITER_IDLE 写超时");
     }
 
-    protected void handleAllIdle(ChannelHandlerContext ctx) {
+    private void handleAllIdle(ChannelHandlerContext ctx) {
 
         sendHeartBeat(ctx);
         logger.debug("ALL_IDLE 写超时");
@@ -76,9 +76,6 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 与服务器失去连接调用
-     *
-     * @param ctx
-     * @throws Exception
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -94,10 +91,8 @@ public class HeartBeatReqHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 发送心跳包
-     *
-     * @param ctx
      */
-    public void sendHeartBeat(ChannelHandlerContext ctx) {
+    private void sendHeartBeat(ChannelHandlerContext ctx) {
         if (ctx != null && ctx.channel().isActive()) {
             ProxyMessage heatBeat = ProxyMessageUtil.buildHeartBeatReq();
             ctx.writeAndFlush(heatBeat);

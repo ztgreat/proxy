@@ -77,12 +77,8 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * 处理http 请求
-     *
-     * @param ctx
-     * @param request
-     * @throws Exception
      */
-    public void httpHandler(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
+    private void httpHandler(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
 
 
         Channel userChannel = ctx.channel();
@@ -124,7 +120,7 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
             if (StringUtils.isNotBlank(realServer.getAddress())) {
 
                 String newReferer;
-                if (realServer.getRealHostPort().intValue() == CommonConstant.DEFAULT_HTTP_PORT) {
+                if (realServer.getRealHostPort() == CommonConstant.DEFAULT_HTTP_PORT) {
                     newReferer = referer.replace(oldHost, realServer.getRealHost());
                 } else {
                     newReferer = referer.replace(oldHost, realServer.getAddress());
@@ -134,7 +130,7 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
         }
 
         //设置host为请求服务器地址
-        if (realServer.getRealHostPort().intValue() == CommonConstant.DEFAULT_HTTP_PORT) {
+        if (realServer.getRealHostPort() == CommonConstant.DEFAULT_HTTP_PORT) {
             request.headers().set(HttpHeaderNames.HOST, realServer.getRealHost());
         } else {
             request.headers().set(HttpHeaderNames.HOST, realServer.getAddress());
@@ -201,7 +197,7 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.error("用户请求发生异常");
         ctx.channel().close();
     }
