@@ -26,62 +26,60 @@ public class LoginAuthRespHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
+        if (!(msg instanceof ProxyMessage)) {
+            //不正常的请求，关闭连接
+            ctx.close();
+            return;
+        }
 
-        if (msg instanceof ProxyMessage) {
-            ProxyMessage message = (ProxyMessage) msg;
+        ProxyMessage message = (ProxyMessage) msg;
 
-            //获取消息类型
-            byte type = message.getType();
+        //获取消息类型
+        byte type = message.getType();
 
-            //如果是心跳请求消息
-            if (type == CommonConstant.Login.TYPE_LOGIN_REQ) {
+        //如果是心跳请求消息
+        if (type == CommonConstant.Login.TYPE_LOGIN_REQ) {
 
-                Channel userChannel = ctx.channel();
-                InetSocketAddress sa = (InetSocketAddress) userChannel.remoteAddress();
+            Channel userChannel = ctx.channel();
+            InetSocketAddress sa = (InetSocketAddress) userChannel.remoteAddress();
 
-                logger.info("客户端({})请求登录认证", sa.getHostName());
+            logger.info("客户端({})请求登录认证", sa.getHostName());
 
-                String clientKey = new String(message.getData());
+            String clientKey = new String(message.getData());
 
+            ClientNode clientNode;
+            clientNode = ServerBeanManager.getClientService().get(clientKey);
+            if (clientNode != null && clientNode.getStatus() == CommonConstant.ClientStatus.ONLINE) {
 
-                ClientNode clientNode;
-                clientNode = ServerBeanManager.getClientService().get(clientKey);
-                if (clientNode != null && clientNode.getStatus() == CommonConstant.ClientStatus.ONLINE) {
-
-                    if (sa.getHostName().equals(clientNode.getHost())) {
-                        //同一个客户端再次登录
-                        //关闭连接
-                        closeChannle(ctx);
-                        return;
-                    }
-
-                    //已经存在一个相同key的客户端登录了
-                    String loginMsg = "登录失败:已经存在一个相同key的客户端登录了";
-                    loginRespone(ctx, loginMsg, CommonConstant.Login.LOGIN_FAIL);
+                if (sa.getHostName().equals(clientNode.getHost())) {
+                    //同一个客户端再次登录
+                    //关闭连接
                     closeChannle(ctx);
                     return;
                 }
 
-                if (clientNode != null && clientNode.getStatus() != CommonConstant.ClientStatus.FORBIDDEN) {
-                    //登录响应
-                    loginRespone(ctx, "登录成功", CommonConstant.Login.LOGIN_SUCCESS);
-                    //保存客户端信息
-                    saveClient2Cache(clientNode, ctx, message);
-                    logger.info("客户端({})登录成功", sa.getHostName());
-                } else {
-                    logger.info("客户端({})登录失败:客户端尚未注册或被禁止登录", sa.getHostName());
-                    String loginMsg = "登录失败:客户端尚未注册或被禁止登录";
-                    loginRespone(ctx, loginMsg, CommonConstant.Login.LOGIN_FAIL);
-                    closeChannle(ctx);
-                }
-
-            } else {
-                ctx.fireChannelRead(msg);
+                //已经存在一个相同key的客户端登录了
+                String loginMsg = "登录失败:已经存在一个相同key的客户端登录了";
+                loginRespone(ctx, loginMsg, CommonConstant.Login.LOGIN_FAIL);
+                closeChannle(ctx);
+                return;
             }
+
+            if (clientNode != null && clientNode.getStatus() != CommonConstant.ClientStatus.FORBIDDEN) {
+                //登录响应
+                loginRespone(ctx, "登录成功", CommonConstant.Login.LOGIN_SUCCESS);
+                //保存客户端信息
+                saveClient2Cache(clientNode, ctx, message);
+                logger.info("客户端({})登录成功", sa.getHostName());
+            } else {
+                logger.info("客户端({})登录失败:客户端尚未注册或被禁止登录", sa.getHostName());
+                String loginMsg = "登录失败:客户端尚未注册或被禁止登录";
+                loginRespone(ctx, loginMsg, CommonConstant.Login.LOGIN_FAIL);
+                closeChannle(ctx);
+            }
+
         } else {
-            //错误的消息格式
-            //关闭用户连接
-            closeChannle(ctx);
+            ctx.fireChannelRead(msg);
         }
 
     }

@@ -41,7 +41,6 @@ public class HttpSendHandler extends ChannelInboundHandlerAdapter {
         httpResponseEncoder = new MyHttpResponseEncoder();
     }
 
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
@@ -66,6 +65,7 @@ public class HttpSendHandler extends ChannelInboundHandlerAdapter {
         //客户端与代理服务的channel
         Channel channel = ClientBeanManager.getProxyService().getChannel();
 
+        // 这里在处理重定向的情况，简单粗暴的处理
         int code = response.status().code();
         if (code == 302 || code == 303) {
             String proxyServer = ClientBeanManager.getProxyService().getProxyServer(realServerChannel);

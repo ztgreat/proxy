@@ -22,33 +22,30 @@ public class TCPHandler extends ChannelInboundHandlerAdapter {
 
         Channel realServerChannel = ctx.channel();
 
-
         int proxyType = ClientBeanManager.getProxyService().getProxyType(realServerChannel);
         //获取代理客户端和代理服务器之间的通道
         Channel channel = ClientBeanManager.getProxyService().getChannel();
-
         if (channel == null) {
             // 代理客户端连接断开
             logger.debug("客户端和代理服务器失去连接");
             ctx.channel().close();
             ReferenceCountUtil.release(msg);
+            return;
+        }
+        //http 消息
+        if (proxyType == CommonConstant.ProxyType.HTTP) {
+            //向上传递
+            ctx.fireChannelRead(msg);
         } else {
+            logger.debug("转发TCP消息到代理服务器");
+            ByteBuf buf = (ByteBuf) msg;
+            byte[] data = new byte[buf.readableBytes()];
+            buf.readBytes(data);
+            buf.release();
 
-            //http 消息
-            if (proxyType == CommonConstant.ProxyType.HTTP) {
-                //向上传递
-                ctx.fireChannelRead(msg);
-            } else {
-                logger.debug("转发TCP消息到代理服务器");
-                ByteBuf buf = (ByteBuf) msg;
-                byte[] data = new byte[buf.readableBytes()];
-                buf.readBytes(data);
-                buf.release();
-
-                Long sessionID = ClientBeanManager.getProxyService().getRealServerChannelSessionID(realServerChannel);
-                ProxyMessage proxyMessage = ProxyMessageUtil.buildMsg(sessionID, CommonConstant.MessageType.TYPE_TRANSFER, null, null, null, data);
-                channel.writeAndFlush(proxyMessage);
-            }
+            Long sessionID = ClientBeanManager.getProxyService().getRealServerChannelSessionID(realServerChannel);
+            ProxyMessage proxyMessage = ProxyMessageUtil.buildMsg(sessionID, CommonConstant.MessageType.TYPE_TRANSFER, null, null, null, data);
+            channel.writeAndFlush(proxyMessage);
         }
     }
 
