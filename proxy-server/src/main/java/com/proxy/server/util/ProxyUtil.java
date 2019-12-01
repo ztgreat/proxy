@@ -8,8 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ProxyUtil {
-    static String PATTERN_IP = "(\\d*\\.){3}\\d*";
-    static Pattern ipPattern = Pattern.compile(PATTERN_IP);
+    private static String PATTERN_IP = "(\\d*\\.){3}\\d*";
+    private static Pattern ipPattern = Pattern.compile(PATTERN_IP);
 
     public static Object getKey(String domain, Channel userChannel) {
 
@@ -20,19 +20,13 @@ public class ProxyUtil {
             return sa.getPort();
         }
         String[] all = domain.split(":");
-        if (all != null) {
-            domain = all[0];
-            return domain;
-        }
-        return "";
+        domain = all[0];
+        return domain;
 
     }
 
     /**
      * 判断是否是ip地址
-     *
-     * @param ip
-     * @return
      */
     public static boolean isIpAddr(String ip) {
         Matcher matcher = ipPattern.matcher(ip);

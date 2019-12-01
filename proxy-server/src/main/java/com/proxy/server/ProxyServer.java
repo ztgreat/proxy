@@ -11,7 +11,6 @@ import com.proxy.server.service.LifeCycle;
 import com.proxy.server.service.LogBackConfigLoader;
 import com.proxy.server.service.ServerBeanManager;
 import com.proxy.server.task.ExitHandler;
-import com.proxy.server.util.ProxyUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -43,12 +42,6 @@ public class ProxyServer implements LifeCycle {
      * 长度域字节数
      */
     private static final int LENGTH_FIELD_LENGTH = 4;
-    /**
-     * 并发量
-     *
-     * @deprecated 废弃
-     */
-    public static int concurrent = 1000;
 
     /**
      * 绑定端口,默认6666
@@ -244,25 +237,6 @@ public class ProxyServer implements LifeCycle {
             logger.error("配置文件出错,http代理至少要有serverport或者domain一种");
             throw new RuntimeException();
         }
-        String forward = (String) real.get("forward");
-
-        if (forward != null) {
-
-            if (CommonConstant.HeaderAttr.Forwarded_Default.equals(forward)) {
-                //指定为服务器ip
-                proxy.setForward(CommonConstant.HeaderAttr.Forwarded_Default);
-            } else if (CommonConstant.HeaderAttr.Forwarded_Random.equals(forward)) {
-                //随机ip
-                proxy.setForward(CommonConstant.HeaderAttr.Forwarded_Random);
-            } else if (ProxyUtil.isIpAddr(forward)) {
-                //用户指定ip
-                proxy.setForward(forward);
-            } else if (!CommonConstant.HeaderAttr.Forwarded_None.equals(forward)) {
-                logger.error("配置文件出错,http代理forward 配置错误");
-                throw new RuntimeException();
-            }
-        }
-
         proxy.setServerPort(serverport);
         proxy.setProxyType(CommonConstant.ProxyType.HTTP);
         clientNode.addRealServer(proxy.getDomain() == null ? serverport : proxy.getDomain(), proxy);

@@ -7,7 +7,6 @@ import com.proxy.common.entity.server.ProxyChannel;
 import com.proxy.common.entity.server.ProxyRealServer;
 import com.proxy.common.protocol.CommonConstant;
 import com.proxy.common.protocol.Message;
-import com.proxy.common.util.IPGenerate;
 import com.proxy.server.event.TransferEvent;
 import com.proxy.server.service.ServerBeanManager;
 import com.proxy.server.util.ProxyUtil;
@@ -22,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -134,24 +132,6 @@ public class HttpChannelHandler extends ChannelInboundHandlerAdapter {
             request.headers().set(HttpHeaderNames.HOST, realServer.getRealHost());
         } else {
             request.headers().set(HttpHeaderNames.HOST, realServer.getAddress());
-        }
-
-
-        String forward = realServer.getForward();
-
-        /**
-         *修改 forward 值
-         */
-        if (StringUtils.isNotBlank(forward)) {
-
-            if (CommonConstant.HeaderAttr.Forwarded_Random.equals(forward)) {
-                request.headers().set("X-Forwarded-For", IPGenerate.getRandomIp());
-            } else if (CommonConstant.HeaderAttr.Forwarded_Default.equals(forward)) {
-                InetSocketAddress sa = (InetSocketAddress) userChannel.localAddress();
-                request.headers().add("X-Forwarded-For", sa.getHostString());
-            } else if (ProxyUtil.isIpAddr(forward)) {
-                request.headers().set("X-Forwarded-For", forward);
-            }
         }
 
 
