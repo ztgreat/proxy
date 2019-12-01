@@ -4,11 +4,13 @@ httpPort: 9090
 client:
         # clientKey
         ztgreat:
+                # domain 代表的是域名转发,代理类型 是http,会解析包
                 - domain: http.proxy.test.com
                   proxyType: http
                   realhost: 127.0.0.1
                   realhostport: 8000
                   description: http代理
+                # serverport 代表的是端口转发,代理类型为TCP,直接转发，不解析包
                 - serverport: 3307
                   proxyType: tcp
                   realhost: 127.0.0.1
